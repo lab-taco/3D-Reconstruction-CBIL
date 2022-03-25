@@ -1,4 +1,4 @@
-from Physics.Parameters import *
+#from Parameters import *
 
 from vpython import *
 import numpy as np

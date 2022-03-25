@@ -9,13 +9,33 @@ from .Cell_Body_Controls import GC_migration_complete
 color_list = [color.red, color.orange, color.yellow, color.green, color.blue, \
                 hat(vector(46,43,95)), hat(vector(139, 0, 255)), color.black]
 
-
-
-
 Mig_Early=hat(vector(192,192,192))
 Mig_Mid=hat(vector(135, 121, 78))
 Mig_Late=hat(vector(109, 135, 100))
 MF_colors = [Mig_Early, Mig_Mid, Mig_Late]
+
+def colormap(Num_Variation, Cell_Type, Plot_Graph=False):
+    import seaborn as sns
+    #145=green, 20=red
+    if Cell_Type=='MF':
+        palette = sns.dark_palette((260, 75, 60), n_colors=Num_Variation, input="husl")        
+    elif Cell_Type=='GC': 
+        palette = sns.diverging_palette(145, 20, s=60, n=Num_Variation, as_cmap=False)
+        
+
+    if Plot_Graph:
+        import matplotlib.pyplot as plt
+        sns.palplot(palette)
+        #plt.plot(palette)
+        plt.show()
+
+    color_map_for_vpython=[]
+    for i in range(len(palette)):
+        color_i=hat(vector(palette[i][0], palette[i][1],palette[i][2]))
+        #color_i=vector(palette[i][0], palette[i][1],palette[i][2])
+        color_map_for_vpython.append(color_i)
+    return color_map_for_vpython
+
 
 def random_sample_2d(length, width, location, cell_type='MF'):        
     length=np.random.choice(length)
@@ -62,7 +82,8 @@ def positions_MFs_childs(Position_parents, Num_childs):
     return positions_childs
 
 
-def sample_MFs_clusters(set_MFs, Num_parents, Num_childs, area_length,area_width, height_PCL,\
+def sample_MFs_clusters(set_MFs, Num_parents, Num_childs, Mig_Timing_Variation,\
+                         area_length,area_width, height_PCL,\
                          static=False, vpython=True):
     MFs=set_MFs
     MF_sample_position=[]    
@@ -72,21 +93,23 @@ def sample_MFs_clusters(set_MFs, Num_parents, Num_childs, area_length,area_width
         else:  # for general experiments
             MF_sample_position.append(np.random.choice(height_PCL))
     #MF_sample_position.sort(reverse=True)
+    colormap_mf=colormap(Mig_Timing_Variation, Cell_Type='MF')
     for i in range(Num_parents):        
         cell_position=random_sample_2d(area_length,area_width,MF_sample_position[i])
-        if i<int(Num_parents/3):
-            mf_color=MF_colors[0]
-        elif i<int(Num_parents*2/3):
-            mf_color=MF_colors[1]
-        else:
-            mf_color=MF_colors[2]
+        mf_color=colormap_mf[i]
+        #if i<int(Num_parents/3):
+        #    mf_color=MF_colors[0]
+        #elif i<int(Num_parents*2/3):
+        #    mf_color=MF_colors[1]
+        #else:
+        #    mf_color=MF_colors[2]
         MFs.append(Cells('MFR', init_position=cell_position, color_=mf_color, vpython=vpython))
 
         positions_childs=positions_MFs_childs(cell_position, Num_childs)
         for j in positions_childs:
             MFs.append(Cells('MFR', init_position=j, color_=mf_color, vpython=vpython))
 
-    return MFs
+    return MFs, colormap_mf
 
 def num_cells_per_MF_clusters(MFs):
     early, mid, late =0, 0, 0
@@ -100,7 +123,7 @@ def num_cells_per_MF_clusters(MFs):
     print('# MFs per migration timing:','early:', early, 'mid',mid,'late',late)
 
 
-
+"""
 def GC_coloring(len_GCs, Max_GC, time_division=1):
     #if len_GCs< int(Max_GC/3):
     if len_GCs< Max_GC/3:
@@ -116,7 +139,7 @@ def GC_Single_coloring(len_GCs, Max_GC, time_division=1):
     elif len_GCs> Max_GC*0.7:
         return color_list[3]
     else:
-        return color_list[-1]
+        return color_list[-1]"""
 
 
 class non_v_cell:

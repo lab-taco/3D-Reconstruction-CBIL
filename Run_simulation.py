@@ -21,7 +21,7 @@ import sys
 
 
 DEFEAULT_Num_parents=10
-DEFEAULT_Num_childs=10
+DEFEAULT_Num_childs=15
 #collision_check_duration=6
 
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
@@ -45,7 +45,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     max_MF=Num_parents*Num_childs + Num_parents
     MF_total=max_MF
     Max_GC=3*max_MF
-
+    
     """
     Layer division, time display, Sample MFs ----------------------------------------------------
     """     
@@ -56,10 +56,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         print('Simulation starts...')
 
         MFs=[] #sample MFs altogether at once for random positions
-        MFs=sample_MFs_clusters(MFs, Num_parents, Num_childs, area_length,area_width, height_PCL, vpython=vpython)
-        num_cells_per_MF_clusters(MFs)
-
-        
+        MFs, Color_map_MF=sample_MFs_clusters(MFs, Num_parents, Num_childs, Mig_Timing_Variation, \
+                                area_length,area_width, height_PCL, vpython=vpython)
+        #num_cells_per_MF_clusters(MFs)
+    
     
     """
     Growth controls of Granule cell & IGL depth.
@@ -85,10 +85,13 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     """
     Main loop ----------------------------------------------------
     """
-    GCs=[]
+    GCs=[]    
+    Num_variation_GC_color = 100 if Max_GC>100 else Max_GC    
+    Color_map_GC = colormap(Num_variation_GC_color, 'GC')
     current_num_GCs=0  #current num cell
-    Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False   
-    while(Simulation_on and not time_display.counter==21*24*time_division): #main loop
+    Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False 
+    End_Time=21*24*time_division  
+    while(Simulation_on and not time_display.counter==End_Time): #main loop
         #gives time final GCs to finish migration and form syanpse
 
         if time_sleep:
@@ -119,7 +122,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             #Calculation of MF Molecular Activity
             MF_activities=MF_activity_coordinator(time_display.counter, time_division)
             for mf in MFs:
-                mf.activity_level=30/10000
+                mf.activity_level=100/10000
                 #if mf.color==Mig_Early:  mf.activity_level=MF_activities[0]/10000                
                 #elif mf.color==Mig_Mid:  mf.activity_level= MF_activities[1]/10000
                 #elif mf.color==Mig_Late: mf.activity_level=MF_activities[2]/10000
@@ -141,10 +144,11 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
 
             #Generation of GCs
             if GC_implementation and not P20_passed:
-                current_num_GCs=int(num_GCs[(time_display.counter)])                    
+                current_num_GCs=int(num_GCs[(time_display.counter)])
                 while len(GCs)<current_num_GCs: 
                     cell_position=random_sample_2d(area_length,area_width,height_PCL,'GC')
-                    cell_color=GC_coloring(len(GCs), Max_GC, time_division)                                             
+                    Ind_GC_Color = int(len(GCs)/Max_GC*Num_variation_GC_color)
+                    cell_color=Color_map_GC[Ind_GC_Color]
                     GCs.append(Cells('GC', init_position=cell_position, color_=cell_color, vpython=vpython))
             # Migration & Synapse formation
             if not P14_passed: target_cells=GCs
@@ -220,7 +224,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                  'which is %.2f percent of all GCs'%(len(early)/len(GCs)*100))
     print('# all_cells:',len(all_cells))
     #after_migration_coloring(early, all_cells)
-
+    sleep(100000)
     sys.exit()  
     if not GC_implementation or not Simulation_on:
         print('GC_implementation off, simulation off')
