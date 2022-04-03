@@ -82,10 +82,10 @@ def positions_MFs_childs(Position_parents, Num_childs):
     return positions_childs
 
 
-def sample_MFs_clusters(set_MFs, Num_parents, Num_childs, Mig_Timing_Variation,\
+def sample_MFs_clusters(List_MFs, Num_parents, Num_childs, max_MF, Mig_Timing_Variation,\
                          area_length,area_width, height_PCL,\
                          static=False, vpython=True):
-    MFs=set_MFs
+    MFs=List_MFs
     MF_sample_position=[]    
     for i in range(Num_parents):
         if static==True: # for sample test
@@ -93,23 +93,30 @@ def sample_MFs_clusters(set_MFs, Num_parents, Num_childs, Mig_Timing_Variation,\
         else:  # for general experiments
             MF_sample_position.append(np.random.choice(height_PCL))
     #MF_sample_position.sort(reverse=True)
-    colormap_mf=colormap(Mig_Timing_Variation, Cell_Type='MF')
-    for i in range(Num_parents):        
+    colormap_for_mig_time=colormap(Mig_Timing_Variation, Cell_Type='MF')
+    #print('len(colormap_for_mig_time)',len(colormap_for_mig_time))
+    if max_MF>=Mig_Timing_Variation: 
+        buf_size = max_MF//(Mig_Timing_Variation)
+        if max_MF%buf_size!=0: buf_size+=1
+    else: raise Exception("max_MF<Mig_Timing_Variation")    
+    mig_timing_ind=0
+    for i in range(Num_parents):
         cell_position=random_sample_2d(area_length,area_width,MF_sample_position[i])
-        mf_color=colormap_mf[i]
-        #if i<int(Num_parents/3):
-        #    mf_color=MF_colors[0]
-        #elif i<int(Num_parents*2/3):
-        #    mf_color=MF_colors[1]
-        #else:
-        #    mf_color=MF_colors[2]
-        MFs.append(Cells('MFR', init_position=cell_position, color_=mf_color, vpython=vpython))
+        MFs.append(Cells('MFR', init_position=cell_position, \
+            color_=colormap_for_mig_time[mig_timing_ind], vpython=vpython))        
+        if len(MFs)%buf_size==0: 
+            #print('len(MFs)',len(MFs), 'mig_timing_ind', mig_timing_ind)
+            if mig_timing_ind<Mig_Timing_Variation:mig_timing_ind+=1
 
         positions_childs=positions_MFs_childs(cell_position, Num_childs)
         for j in positions_childs:
-            MFs.append(Cells('MFR', init_position=j, color_=mf_color, vpython=vpython))
+            MFs.append(Cells('MFR', init_position=j, \
+                color_=colormap_for_mig_time[mig_timing_ind], vpython=vpython))
+            if len(MFs)%buf_size==0: 
+                #print('len(MFs)',len(MFs), 'mig_timing_ind', mig_timing_ind)
+                if mig_timing_ind<Mig_Timing_Variation: mig_timing_ind+=1
 
-    return MFs, colormap_mf
+    return MFs, colormap_for_mig_time
 
 def num_cells_per_MF_clusters(MFs):
     early, mid, late =0, 0, 0

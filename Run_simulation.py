@@ -54,10 +54,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         time_display=class_time_display(area_length, height_PCL, time_division=time_division, vpython=vpython)        
         if Layer_expansion: IGL_expansion=moving_layer(area_length, height_PCL, area_width, vpython=vpython)
         print('Simulation starts...')
-
         MFs=[] #sample MFs altogether at once for random positions
-        MFs, Color_map_MF=sample_MFs_clusters(MFs, Num_parents, Num_childs, Mig_Timing_Variation, \
+        MFs, Color_map_MF=sample_MFs_clusters(MFs, Num_parents, Num_childs, max_MF, Mig_Timing_Variation, \
                                 area_length,area_width, height_PCL, vpython=vpython)
+        
         #num_cells_per_MF_clusters(MFs)
     
     
