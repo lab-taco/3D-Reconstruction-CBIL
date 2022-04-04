@@ -1,3 +1,4 @@
+from logging import exception
 from Simulation.Parameters import *
 from Simulation.Init_Setting.Set_SpaceTime import *
 from Simulation.Init_Setting.Growth_Control import *
@@ -90,7 +91,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Color_map_GC = colormap(Num_variation_GC_color, 'GC')
     current_num_GCs=0  #current num cell
     Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False 
-    End_Time=21*24*time_division  
+    End_Time=21*24*time_division
+
+    MF_activity_pattern=curvs_generations(Mig_Timing_Variation, time_division)
+    if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
     while(Simulation_on and not time_display.counter==End_Time): #main loop
         #gives time final GCs to finish migration and form syanpse
 
@@ -120,9 +124,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             time_display.time_count() # count time steps for postnatal days
             
             #Calculation of MF Molecular Activity
-            MF_activities=MF_activity_coordinator(time_display.counter, time_division)
+            #MF_activities=MF_activity_coordinator(time_display.counter, time_division)
             for mf in MFs:
-                mf.activity_level=100/10000
+                mig_ind = Color_map_MF.index(mf.color)                
+                mf.activity_level=MF_activity_pattern[mig_ind][time_display.counter]
                 #if mf.color==Mig_Early:  mf.activity_level=MF_activities[0]/10000                
                 #elif mf.color==Mig_Mid:  mf.activity_level= MF_activities[1]/10000
                 #elif mf.color==Mig_Late: mf.activity_level=MF_activities[2]/10000

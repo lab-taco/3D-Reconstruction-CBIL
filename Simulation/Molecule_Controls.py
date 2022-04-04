@@ -1,5 +1,6 @@
 #from Parameters import *
 
+from time import time
 from vpython import *
 import numpy as np
 
@@ -37,3 +38,39 @@ def MF_activity_coordinator_separatedactivities(time_step, time_division):
                 x_var=t+50, time_division=time_division, sigma=s, k=k)+1
     MF_activities=[Early_MF_activity, Mid_MF_activity, Late_MF_activity]
     return MF_activities
+
+
+
+def sign_curv_function(time_steps, curv_width, t_division, t_shift=0, peak_val=10, superpose=0):
+    val_func=np.zeros(time_steps)
+    len_curve=curv_width*t_division+superpose
+    curve_at_time=peak_val*np.sin((np.pi*(np.arange(len_curve))/len_curve))
+    val_func[t_shift:t_shift+len_curve]+=curve_at_time
+    return val_func
+
+def curvs_generations(num_curvs, t_division,SP=0, PK=10, draw=False):
+    #num_curvs: Mig_Timing_Variation, SP: Superposing degree, PK= Peak Value, 
+    P7=24*7
+    P14=24*14
+    t=np.arange(24*20*t_division)
+    cw=P7//num_curvs
+    print('len t', len(t), 'len curv', cw, 'P7', P7*t_division, 'P14',P14*t_division)
+    curvs=[]
+    for curv in range(num_curvs):    
+        act_curve = sign_curv_function(len(t), cw, t_division,\
+                 t_shift=(P7+cw*curv)*t_division, peak_val=PK, superpose=SP)
+        print('curve', curv, 'at', (P7+cw*curv)*t_division)
+        curvs.append(act_curve)
+        
+    if draw:
+        import matplotlib.pyplot as plt 
+        for _ in curvs:
+            plt.plot(t, act_curve)
+        plt.axvline(x=P7*t_division, color='k', linestyle='--',label='P7')
+        plt.axvline(x=P14*t_division, color='k', linestyle='--',label='P14')
+        plt.xlabel('time')
+        plt.ylabel('activity')
+        plt.text(len(t)*0.75, PK*0.8, "Superposing=%d"%SP)
+        plt.legend()
+        plt.show()
+    return curvs
