@@ -12,14 +12,56 @@ def distance(S1, S2):
                       +(S1.body.pos.z-S2.body.pos.z)**2)
     return distance
 
-def negative_softmax(valueset):
-    return np.exp(-1*valueset)/np.exp(-1*valueset).sum()
+def normalization(valueset): #Luce's Choice Axiom
+    return np.array(valueset)/np.array(valueset).sum()
 
+def softmax(valueset): # Exponential
+    return np.exp(valueset)/np.exp(valueset).sum()
+    
 
-def softmax(valueset): # no Exponential
-    #return np.exp(valueset)/np.exp(valueset).sum()
-    return valueset/valueset.sum()
+# Distance/Activity dependent
+def Form_Synapse(GCs, MFs, MF_activities):
+    for GC in [cell for cell in GCs if cell.flag_arrived_final_destination\
+                                     and len(cell.synapse_partners)==0]:
+        distance_values=[] #distribution of distance        
+        activity_values=[]
+        INDICES_MFs=np.arange(len(MFs))
+        for mf in MFs:  
+            distance_values.append(distance(GC, mf))
+            activity_values.append(mf.activity_level)            
+            #sorted_distance_values=distance_values.sort(reverse=True)
+        Contact_rate_by_distance = softmax(distance_values)
+        #distance_values=np.array(distance_values)
+        
+        #print('distance_values',distance_values)
+        #print('np.log(softmax(distance_values)', np.log(softmax(distance_values)))
 
+        IND_initial_contacts=np.random.choice(INDICES_MFs, 10, \
+                        replace=False, p=Contact_rate_by_distance) #draw 10 mfs by distance
+        #print('Contact_rate_by_distance', Contact_rate_by_distance)        
+        #print('IND_initial_contacts',IND_initial_contacts)
+        #print('activity_values', activity_values)
+        
+        activity_values=np.array(activity_values)
+        activity_of_the_contacted = np.take(activity_values, IND_initial_contacts)
+        #print('activity_of_the_contacted', activity_of_the_contacted)
+        #print('normalization_contacted', normalization(activity_of_the_contacted))
+
+        IND_activity_draws=np.random.choice(IND_initial_contacts, 4, \
+                        replace=False, p=softmax(activity_of_the_contacted)) #draw 4 mfs by activity        
+        synapsed_MFs=[MFs[ind] for ind in IND_activity_draws]
+        #print('IND_synapsed_MFs', IND_activity_draws)
+        #print(synapsed_MFs)
+
+        #synapsed_MFs=[MFs(np.where(distance_values==distance)) for distance in draws]
+        #Selection of MFs that form actual synapse
+        
+        for mf in synapsed_MFs:
+            GC.synapse_partners.append(mf)
+            mf.synapse_partners.append(GC)
+
+""" 
+# Distance/Activity dependent
 def Form_Synapse(GCs, MFs, MF_activities):
     for GC in [cell for cell in GCs if cell.flag_arrived_final_destination\
                                      and len(cell.synapse_partners)==0]:
@@ -27,7 +69,7 @@ def Form_Synapse(GCs, MFs, MF_activities):
         relative_activity= []
         for mf in MFs:  
             distance_values.append(distance(GC, mf))
-            relative_activity.append(mf.activity_level/np.sum(MF_activities))
+            relative_activity.append(mf.activity_level/MF_activities)
             #print('mf.activity_level value', mf.activity_level)
             #relative_activity.append(softmax(np.array(relative_activity)))
             #sorted_distance_values=distance_values.sort(reverse=True)
@@ -64,7 +106,8 @@ def Form_Synapse(GCs, MFs, MF_activities):
         for mf in synapsed_MFs:
             GC.synapse_partners.append(mf)
             mf.synapse_partners.append(GC)              
-        
+"""
+
 def num_synapse(GCs,MFs):
     num_synapse_GC=0
     num_synapse_MF=0

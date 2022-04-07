@@ -24,7 +24,7 @@ height_PCL=radius_GC*42
 area_length=height_PCL
 area_width=height_PCL
 
-Mig_Timing_Variation=11
+Mig_Timing_Variation=10
 
 simulation_time=24*20*time_division  #20days each 24 hours
 

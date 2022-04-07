@@ -1,4 +1,5 @@
 from logging import exception
+import turtle
 from Simulation.Parameters import *
 from Simulation.Init_Setting.Set_SpaceTime import *
 from Simulation.Init_Setting.Growth_Control import *
@@ -22,7 +23,7 @@ import sys
 
 
 DEFEAULT_Num_parents=10
-DEFEAULT_Num_childs=15
+DEFEAULT_Num_childs=0
 #collision_check_duration=6
 
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
@@ -36,7 +37,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             , 'Save_name_Synapses:',Save_name_Synapses, 'Save_name_cell_locations:',Save_name_cell_locations\
             ,'\n-------------------------------------    ------------------')
     #Save_name_Synapses, Save_name_cell_locations='save_tmp', 'save_tmp'
-    #Simulation_on=False
+    Simulation_on=True
     #GC_implementation=False
     #vpython=Falses
     time_sleep=True     
@@ -125,9 +126,11 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             
             #Calculation of MF Molecular Activity
             #MF_activities=MF_activity_coordinator(time_display.counter, time_division)
+            Sum_mf_activities=0 # For the calculation of synapse contact probabiligy, later
             for mf in MFs:
                 mig_ind = Color_map_MF.index(mf.color)                
                 mf.activity_level=MF_activity_pattern[mig_ind][time_display.counter]
+                Sum_mf_activities+=mf.activity_level
                 #if mf.color==Mig_Early:  mf.activity_level=MF_activities[0]/10000                
                 #elif mf.color==Mig_Mid:  mf.activity_level= MF_activities[1]/10000
                 #elif mf.color==Mig_Late: mf.activity_level=MF_activities[2]/10000
@@ -161,8 +164,18 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             #GC_migrates(target_cells, current_depth, time_display.counter, collision_check_duration)
             GC_migrates(target_cells, current_depth, time_display.counter)
             check_molecule_exposure(GCs,MFs, collision_check_cells=target_cells, vpython=vpython)
-            Form_Synapse(GCs, MFs, MF_activities)
+            if current_num_GCs>0:
+                if not GCs[0].flag_arrived_final_destination and Sum_mf_activities<0:
+                    print('Sum_mf_activities < 0 at time:', time_display.counter)
+                    #print('Sum_mf_activities > 0 at time:', time_display.counter)
+                else:
+                    Form_Synapse(GCs, MFs, Sum_mf_activities)
                 
+            #    break
+    print('end for now!!!!!!!!!!!!')
+    while True:
+        pass
+    sys.exit()                
     #Simulation ends
     final_collision_check(GCs+MFs)
 

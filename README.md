@@ -1,5 +1,6 @@
 3D Reconstruction of the Cerebellar Input Layer
 
+Developer: Ikhwan Jeon, 2kaijeon@gmail.com
 Configuration:
 -Physical Settings: Num_childs, Num_parents, Layer_expansion
 -To look into simulation: Simulation_on, GC_implementation, vpython, time_sleep
