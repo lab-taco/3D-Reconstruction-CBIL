@@ -28,10 +28,14 @@ def colormap(Num_Variation, Cell_Type, Plot_Graph=False):
         sns.palplot(palette)
         #plt.plot(palette)
         plt.show()
+        #sp_list=[]
+        #for i in range(Num_Variation):
+        #    color_i=vector(palette[i][0], palette[i][1],palette[i][2])
+        #    sp_list.append(sphere(pos=vector(i*1+0.01,0,0), radius=1, color=color_i))
 
     color_map_for_vpython=[]
-    for i in range(len(palette)):
-        color_i=hat(vector(palette[i][0], palette[i][1],palette[i][2]))
+    for i in range(Num_Variation):
+        color_i=vector(palette[i][0], palette[i][1], palette[i][2])
         #color_i=vector(palette[i][0], palette[i][1],palette[i][2])
         color_map_for_vpython.append(color_i)
     return color_map_for_vpython
@@ -179,7 +183,7 @@ class Cells:
             #self.body=compound([self.rosette, self.radiation3, self.radiation2, self.radiation1])
             self.body=self.rosette
         elif cell_type=='GC':
-            self.gauge=0.01
+            self.gauge=0
             self.cell_type='GC'
             self.radius=radius_GC
             self.superposition=False            
@@ -219,14 +223,16 @@ class Cells:
 
     
     def movedown(self, current_depth_IGL=height_PCL):        
+        #if self.cell_type=='GC':
+        if self.flag_arrived_final_destination:
+            raise Exception('Cell move down but migration FLAG on')
         if self.cell_type=='GC':
-            if not self.flag_arrived_final_destination:
-                if self.body.pos.y>1e-3+current_depth_IGL:  #precision 0.001
-                    self.body.pos.y-=height_PCL/(10*time_division)
-                    if self.body.pos.y<=1e-3+current_depth_IGL:
-                        self.body.pos.y=current_depth_IGL
-                        GC_migration_complete(self, self.vpytyhon)
-                        self.flag_arrived_final_destination=True
+            if self.body.pos.y>1e-3+current_depth_IGL:  #precision 0.001
+                self.body.pos.y-=GC_Migration_Speed #migration downward speed
+                if self.body.pos.y<=1e-3+current_depth_IGL:
+                    self.body.pos.y=current_depth_IGL
+                    GC_migration_complete(self, self.vpytyhon)
+                    self.flag_arrived_final_destination=True
             #if self.flag_arrived_final_destination and not self.body.pos.y<self.radius:
             #    self.body.pos.y-=(height_PCL*0.20)/(24*7)
         elif self.cell_type=='GC_sample': #Only difference is the existence of the gauge-display

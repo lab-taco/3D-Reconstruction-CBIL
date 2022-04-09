@@ -8,7 +8,7 @@ import time
 sys.setrecursionlimit(10**6)  #function recursion limit, default was 1000
 
 
-
+"""
 def config():
     height_PCL=radius_GC*42
     area_length=height_PCL
@@ -23,7 +23,7 @@ def config():
     intensity_radiation3=0.001/time_division
     return height_PCL, area_length, area_width\
             ,radiation1, radiation2, radiation3\
-            ,intensity_radiation1, intensity_radiation2, intensity_radiation3
+            ,intensity_radiation1, intensity_radiation2, intensity_radiation3"""
 
 #area_length=300
 #area_width=300
@@ -187,37 +187,36 @@ def all_superposition_check(cells):
 
     
 
-def check_molecule_exposure(GCs, MFs, collision_check_cells, vpython):
-    for GC in [cell for cell in GCs if not cell.flag_arrived_final_destination]:
+def Molecule_absorption(GCs, MFs, collision_check_cells, vpython):
+    for GC in [cell for cell in GCs if not cell.flag_arrived_final_destination and cell.gauge<1]:
         for MF in MFs:
             distance=math.sqrt((GC.body.pos.x-MF.rosette.pos.x)**2\
                               +(GC.body.pos.y-MF.rosette.pos.y)**2\
                               +(GC.body.pos.z-MF.rosette.pos.z)**2)
             if distance<radius_GC+radiation1:
                 #GC.gauge+=intensity_radiation1
-                GC.gauge+=MF.activity_level*rate1
+                GC.gauge+=MF.activity_level*intensity_radiation1
             elif distance<radius_GC+radiation2:
                 #GC.gauge+=intensity_radiation2-
-                GC.gauge+=MF.activity_level*rate2
+                GC.gauge+=MF.activity_level*intensity_radiation2
             elif distance<radius_GC+radiation3:
                 #GC.gauge+=intensity_radiation3
-                GC.gauge+=MF.activity_level*rate3
+                GC.gauge+=MF.activity_level*intensity_radiation3
             
             if GC.gauge>=1:
                 GC.gauge=1
         if GC.cell_type=='GC_sample':
             GC.display.text=GC.gauge
-        #print('Gauge:',GC.gauge)
-        stop_or_not(GC, vpython)
-        if GC.flag_arrived_final_destination:
-            superposition_check(GC, collision_check_cells)
+        #print('Gauge:',GC.gauge)        
 
-def stop_or_not(GC, vpython):
-    s_o_n = ['stop', 'not']
-    draw=np.random.choice(s_o_n, p=[GC.gauge, 1-GC.gauge])
-    if draw=='stop':
-        GC.flag_arrived_final_destination=True
-        GC_migration_complete(GC, vpython)
+def Stop_or_not(GCs, collision_check_cells, vpython):
+    for GC in [cell for cell in GCs if not cell.flag_arrived_final_destination]:
+        s_o_n = ['stop', 'not']
+        draw=np.random.choice(s_o_n, p=[GC.gauge, 1-GC.gauge])
+        if draw=='stop':
+            GC.flag_arrived_final_destination=True
+            GC_migration_complete(GC, vpython)
+            superposition_check(GC, collision_check_cells)
 
 def GC_migration_complete(cell, vpython):
     if vpython==True:
@@ -225,12 +224,15 @@ def GC_migration_complete(cell, vpython):
         cell.body=sphere(pos=cell.body.pos, radius=cell.radius, color=cell.color)
         
 #def GC_migrates(cells, current_depth_IGL, time_steps, collision_check_duration):       
-def GC_migrates(cells, current_depth_IGL, time_steps):       
-    for cell in [c for c in cells if not c.flag_arrived_final_destination]:               
+def Cell_migratedown(Cells, current_depth_IGL, time_steps):
+    for cell in [c for c in Cells if not c.flag_arrived_final_destination]:
+        cell.gauge=GC_Migration_Speed*(1/(cell.body.pos.y)) # think about the function curve and gc location
+        #cell.gauge=1
         cell.movedown(current_depth_IGL)               
-        if len(cells)>1 and cell.flag_arrived_final_destination: \
+        #if len(Cells)>1 and gc.flag_arrived_final_destination: \
+        if cell.flag_arrived_final_destination: \
             #and time_steps%collision_check_duration==0:
-            superposition_check(cell, cells)
+            superposition_check(cell, Cells)
 
 
 def MF_growup(MFs):    

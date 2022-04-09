@@ -22,8 +22,7 @@ import sys
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
 
-DEFEAULT_Num_parents=10
-DEFEAULT_Num_childs=0
+
 #collision_check_duration=6
 
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
@@ -52,9 +51,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Layer division, time display, Sample MFs ----------------------------------------------------
     """     
     if Simulation_on:
-        layer_division(area_length, height_PCL, area_width, labeling=False, vpython=vpython)
         time_display=class_time_display(area_length, height_PCL, time_division=time_division, vpython=vpython)        
-        if Layer_expansion: IGL_expansion=moving_layer(area_length, height_PCL, area_width, vpython=vpython)
+        layer_division(area_length, height_PCL, area_width, labeling=False, vpython=vpython) #against PCL, the ceiling
+        if Layer_expansion: 
+            IGL_expansion=moving_layer(area_length, height_PCL, area_width, vpython=vpython) #against WM, the bottom
         print('Simulation starts...')
         MFs=[] #sample MFs altogether at once for random positions
         MFs, Color_map_MF=sample_MFs_clusters(MFs, Num_parents, Num_childs, max_MF, Mig_Timing_Variation, \
@@ -92,11 +92,12 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Color_map_GC = colormap(Num_variation_GC_color, 'GC')
     current_num_GCs=0  #current num cell
     Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False 
-    End_Time=21*24*time_division
+    #End_Time=21*24*time_division
+    End_Time=20*24*time_division
 
     MF_activity_pattern=curvs_generations(Mig_Timing_Variation, time_division)
     if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
-    while(Simulation_on and not time_display.counter==End_Time): #main loop
+    while(Simulation_on and not P20_passed): #main loop
         #gives time final GCs to finish migration and form syanpse
 
         if time_sleep:
@@ -121,34 +122,33 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                 Postnatal_days=True
                 time_display.display.text=('P%d'%time_display.day)
         
-        elif Postnatal_days: # Postnatal stage
-            time_display.time_count() # count time steps for postnatal days
+        elif Postnatal_days: # Postnatal stage            
+            #Postnatal Timing
+            if not P7_passed and time_display.counter==7*24*time_division: P7_passed=True # 7days * 24 hours
+            if not P14_passed and time_display.counter==14*24*time_division: # 14days * 24 hours
+                P14_passed=True   #at the end of P14, take all MFs into collision control process
+                MFs_migration_complete(MFs)
+                all_cells=GCs + MFs
+                all_superposition_check(all_cells)                        
+
+            #IGL expansion
+            #if time_display.counter<len(depth_IGL_table):
             
+            #current_depth=depth_IGL_table[time_display.counter-1]
+            current_depth=depth_IGL_table[time_display.counter]
+            if Layer_expansion: #expand IGL according to current depth by table
+                IGL_expansion.expand(current_depth)
+                #if P20_passed: IGL_expansion.expansion_end()
             #Calculation of MF Molecular Activity
             #MF_activities=MF_activity_coordinator(time_display.counter, time_division)
             Sum_mf_activities=0 # For the calculation of synapse contact probabiligy, later
             for mf in MFs:
                 mig_ind = Color_map_MF.index(mf.color)                
                 mf.activity_level=MF_activity_pattern[mig_ind][time_display.counter]
-                Sum_mf_activities+=mf.activity_level
-                #if mf.color==Mig_Early:  mf.activity_level=MF_activities[0]/10000                
-                #elif mf.color==Mig_Mid:  mf.activity_level= MF_activities[1]/10000
-                #elif mf.color==Mig_Late: mf.activity_level=MF_activities[2]/10000
             
-            #IGL expansion
-            if time_display.counter<len(depth_IGL_table):
-                current_depth=depth_IGL_table[time_display.counter-1]
-                if Layer_expansion: #expand IGL according to current depth by table
-                    IGL_expansion.expand(current_depth)                 
             
-            #Timing
-            if not P7_passed and time_display.counter==7*24*time_division: P7_passed=True # 7days * 24 hours
-            if not P14_passed and time_display.counter==14*24*time_division: # 14days * 24 hours
-                P14_passed=True   #at the end of P14, take all MFs into collision control process
-                MFs_migration_complete(MFs)
-                all_cells=GCs + MFs
-                all_superposition_check(all_cells) 
-            if not P20_passed and time_display.counter==20*24*time_division: P20_passed=True # 20days * 24 hours
+                
+            Sum_mf_activities+=mf.activity_level           
 
             #Generation of GCs
             if GC_implementation and not P20_passed:
@@ -162,18 +162,21 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             if not P14_passed: target_cells=GCs
             else: target_cells=GCs + MFs  #keep update target_cells for collision control of MFs                
             #GC_migrates(target_cells, current_depth, time_display.counter, collision_check_duration)
-            GC_migrates(target_cells, current_depth, time_display.counter)
-            check_molecule_exposure(GCs,MFs, collision_check_cells=target_cells, vpython=vpython)
+            Cell_migratedown(target_cells, current_depth, time_display.counter)
+            #Molecule_absorption(GCs, MFs, collision_check_cells=target_cells, vpython=vpython)
+            Stop_or_not(GCs, target_cells, vpython)
             if current_num_GCs>0:
                 if not GCs[0].flag_arrived_final_destination and Sum_mf_activities<0:
                     print('Sum_mf_activities < 0 at time:', time_display.counter)
                     #print('Sum_mf_activities > 0 at time:', time_display.counter)
                 else:
                     Form_Synapse(GCs, MFs, Sum_mf_activities)
-                
-            #    break
+
+            time_display.time_count() # count time steps for postnatal days
+            if time_display.counter==20*24*time_division: P20_passed=True # 20days * 24 hours 
     print('end for now!!!!!!!!!!!!')
     while True:
+        sleep(10)
         pass
     sys.exit()                
     #Simulation ends

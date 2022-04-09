@@ -52,7 +52,7 @@ def sign_curv_function(time_steps, curv_width, t_division, \
 def curvs_generations(num_curvs, t_division, PK=10, SP=100, draw=False):
     #num_curvs: Mig_Timing_Variation, SP: Superposing degree, PK= Peak Value, 
     P7=24*7
-    P6=24*6
+    #P6=24*6
     P14=24*14
     t=np.arange(24*20*t_division)
     cw=P7//num_curvs

@@ -34,7 +34,7 @@ class class_time_display:
                 #print('Day %d, h %d'%(self.day, self.counter/self.time_division))
                 print('P%d'%self.day)
             if self.counter==20*24*self.time_division:
-                print('Simulation time end, after processing....')
+                print('Time counter:', self.counter,'Simulation ends, post-processing start....')
 
 
 class layer_box:
@@ -54,15 +54,18 @@ class moving_layer:
         
     def expand(self, depth):
         self.expanding_border.pos.y=depth   
-        #self.expanding_border.pos.y-=height_PCL/(24*20)   
+        #self.expanding_border.pos.y-=height_PCL/(24*20)
+    def expansion_end(self):
+        self.expanding_border.color=color.white   
 
 
 def layer_division(area_length, height_PCL, area_width, height_WM=0, labeling=False, vpython=True):
     length=area_length/2
     width=area_width/2
     if vpython:
-        Intersection1=box(pos=vector(length,height_PCL,width), size=vector(area_length,0.1,area_width), color=color.blue)  ## btwn PCL & IGL    
-        Intersection2=box(pos=vector(length,height_WM ,width), size=vector(area_length,0.1,area_width))  ## btwn IGL & WM
+        Intersection1=box(pos=vector(length,height_PCL,width), size=vector(area_length,0.1,area_width), \
+            color=color.blue)  ## btwn PCL & IGL    
+        #Intersection2=box(pos=vector(length,height_WM ,width), size=vector(area_length,0.1,area_width))  ## btwn IGL & WM
     else:
         Intersection1=layer_box(pos=vector(length,height_PCL,width))  ## btwn PCL & IGL    
         Intersection2=layer_box(pos=vector(length,height_WM ,width))  ## btwn IGL & WM
