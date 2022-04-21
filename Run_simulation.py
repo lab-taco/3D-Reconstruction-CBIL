@@ -1,5 +1,4 @@
 from logging import exception
-import turtle
 from Simulation.Parameters import *
 from Simulation.Init_Setting.Set_SpaceTime import *
 from Simulation.Init_Setting.Growth_Control import *
@@ -57,7 +56,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             IGL_expansion=moving_layer(area_length, height_PCL, area_width, vpython=vpython) #against WM, the bottom
         print('Simulation starts...')
         MFs=[] #sample MFs altogether at once for random positions
-        MFs, Color_map_MF=sample_MFs_clusters(MFs, Num_parents, Num_childs, max_MF, Mig_Timing_Variation, \
+        MFs, Color_map_MF=sample_MFs_clusters(MFs, Num_parents, Num_childs, max_MF, MF_Mig_Timing_Variation, \
                                 area_length,area_width, height_PCL, vpython=vpython)
         
         #num_cells_per_MF_clusters(MFs)
@@ -88,14 +87,15 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Main loop ----------------------------------------------------
     """
     GCs=[]    
-    Num_variation_GC_color = 100 if Max_GC>100 else Max_GC    
+    #Num_variation_GC_color = 100 if Max_GC>100 else Max_GC    
+    Num_variation_GC_color = GC_Mig_Timing_Variation
     Color_map_GC = colormap(Num_variation_GC_color, 'GC')
     current_num_GCs=0  #current num cell
     Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False 
     #End_Time=21*24*time_division
-    End_Time=20*24*time_division
+    #End_Time=20*24*time_division
 
-    MF_activity_pattern=curvs_generations(Mig_Timing_Variation, time_division)
+    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation, time_division)
     if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
     while(Simulation_on and not P20_passed): #main loop
         #gives time final GCs to finish migration and form syanpse

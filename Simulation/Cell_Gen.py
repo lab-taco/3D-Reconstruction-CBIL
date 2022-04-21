@@ -18,9 +18,9 @@ def colormap(Num_Variation, Cell_Type, Plot_Graph=False):
     import seaborn as sns
     #145=green, 20=red
     if Cell_Type=='MF':
-        palette = sns.dark_palette((260, 75, 60), n_colors=Num_Variation, input="husl")        
+        palette = sns.color_palette("Blues", n_colors=Num_Variation)      
     elif Cell_Type=='GC': 
-        palette = sns.diverging_palette(145, 20, s=60, n=Num_Variation, as_cmap=False)
+        palette = sns.diverging_palette(145, 20, s=60, center="dark", n=Num_Variation, as_cmap=False)
         
 
     if Plot_Graph:

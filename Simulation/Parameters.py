@@ -25,7 +25,8 @@ intensity_radiation2=(0.005)*scale_radiation_intensity
 intensity_radiation3=(0.001)*scale_radiation_intensity
 
 
-Mig_Timing_Variation=10
+MF_Mig_Timing_Variation=10
+GC_Mig_Timing_Variation=3
 
 simulation_time=24*20*time_division  #20days each 24 hours
 
