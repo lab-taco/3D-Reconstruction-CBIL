@@ -17,6 +17,11 @@ import matplotlib.pyplot as plt
 import time
 import sys
 
+""" Add for M1 Mac """
+import txaio  
+txaio.use_asyncio()
+""" -------------- """
+
 #from hanging_threads import start_monitoring
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
