@@ -15,41 +15,26 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt 
 import time
-import sys
 
-""" OS Check """
-import os
-import platform
-import sysconfig
-print('OS Check...')
-print("os.name                     ", os.name)
-print("sys.platform                ", sys.platform)
-print("platform.system()           ", platform.system())
-print("sysconfig.get_platform()    ", sysconfig.get_platform())
-print("platform.machine()          ", platform.machine())
-print("platform.architecture()     ", platform.architecture())
-if platform.system()!= "Windows":
-    import txaio  
-    txaio.use_asyncio()
-""" -------------- """
+
 
 #from hanging_threads import start_monitoring
 #start_monitoring(seconds_frozen=10, test_interval=100)
-
-
 
 #collision_check_duration=6
 
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
-                Save_name_Synapses, Save_name_cell_locations):
+                Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
     start_time = time.time()
-    print('-------Parameter status-----------------------------\n',\
-        'Num_childs:', Num_childs, 'Num_parents:', Num_parents, 'Simulation:',Simulation_on\
-            , 'Blink:',Blink,'\nGC_implementation:',GC_implementation, 'Layer_expansion:',Layer_expansion\
-            , 'vpython:',vpython, 'time_sleep:',time_sleep, '\n'\
-            , 'Save_name_Synapses:',Save_name_Synapses, 'Save_name_cell_locations:',Save_name_cell_locations\
-            ,'\n-------------------------------------    ------------------')
+    print('-------Parameter status-----------------------------\n'\
+        , 'Num_childs:', Num_childs, 'Num_parents:', Num_parents, 'Simulation:',Simulation_on\
+        , 'Blink:',Blink,'\nGC_implementation:',GC_implementation, 'Layer_expansion:',Layer_expansion\
+        , 'vpython:',vpython, 'time_sleep:', time_sleep)
+    print('-----------DATA Save Name----------------------\n'\
+        , 'Synapses:',Save_name_Synapses, 'Cell_locations:',Save_name_cell_locations\
+        , 'Cell_Objects:',Save_name_Cell_Objects)
+    print('DATA_PATH:', DATA_PATH, '\n-------------------------------------------------------')
     #Save_name_Synapses, Save_name_cell_locations='save_tmp', 'save_tmp'
     Simulation_on=True
     #GC_implementation=False
@@ -186,15 +171,18 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                     print('Sum_mf_activities < 0 at time:', time_display.counter)
                     #print('Sum_mf_activities > 0 at time:', time_display.counter)
                 else:
-                    Form_Synapse(GCs, MFs, Sum_mf_activities)
+                    #Form_Synapse(GCs, MFs, Sum_mf_activities)
+                    Initial_Contacts(GCs, MFs)
 
             time_display.time_count() # count time steps for postnatal days
             if time_display.counter==20*24*time_division: P20_passed=True # 20days * 24 hours 
     print('end for now!!!!!!!!!!!!')
-    while True:
-        sleep(10)
-        pass
-    sys.exit()                
+    
+    #while True:
+    #    sleep(10)
+    #    pass
+    #sys.exit()
+
     #Simulation ends
     final_collision_check(GCs+MFs)
 
@@ -202,7 +190,15 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     print('After processes end, total elapsed time:', elapsed_time)
     
     
+    if not Save_name_Cell_Objects=='No save':
+        from datetime import date, datetime    
+        now=datetime.now().strftime("%d-%m-%Y-%H%M")
+        data_name=Save_name_Cell_Objects+'_{}{}_{}'.format('Num_parents',str(Num_parents),'time')+now
+        data_save(data_name+'_GCs', GCs, DATA_PATH)
+        data_save(data_name+'_MFs', MFs, DATA_PATH)
     
+    
+    sys.exit()
     #early=[]
     #late=[]
     #for cell in GCs:
@@ -220,8 +216,6 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     #if not GC_implementation or not Simulation_on:
     #    print('GC_implementation off, simulation off')
     #    sys.exit()
-    from datetime import date, datetime    
-    now=datetime.now().strftime("%d-%m-%Y-%H%M")
 
     #Save_name_Synapses='No save'
     Save_name_Synapses='tolerance'
@@ -238,6 +232,9 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     
         edges_for_all_MFs.append(['Num_GCs', Max_GC])
         #data_save('Volume_filling2', edges_for_all_MFs)
+
+        from datetime import date, datetime    
+        now=datetime.now().strftime("%d-%m-%Y-%H%M")
         data_name=Save_name_Synapses+'_{}_{}_{}'.format(str(Num_parents),'MFs', 'edges')+now
         data_save(data_name, edges_for_all_MFs)
 
@@ -324,18 +321,23 @@ if __name__ == '__main__':
     parser.add_argument('--Save_name_Synapses', type=str, dest='Save_name_Synapses',
                         default='save_tmp',
                         help='Extract and Save the connection of Synapses made through a simulation.\
-                                imput "No save" for saving nothing')
+                                input "No save" for saving nothing')
 
     parser.add_argument('--Save_name_cell_locations', type=str, dest='Save_name_cell_locations',
                         default='save_tmp',
                         help='Save_name_cell_locations.\
-                             imput "No save" for saving nothing')
+                             input "No save" for saving nothing')
+
+    parser.add_argument('--Save_name_Cells', type=str, dest='Save_name_Cell_Objects',
+                        default='save_cell_objects',
+                        help='Save_name_cell_locations.\
+                             input "No save" for saving nothing')    
     
     args = parser.parse_args()
     
     main(args.Num_childs, args.Num_parents, args.Simulation_on, args.Blink, \
          args.GC_implementation, args.Layer_expansion, args.vpython, args.time_sleep, \
-         args.Save_name_Synapses, args.Save_name_cell_locations)
+         args.Save_name_Synapses, args.Save_name_cell_locations, args.Save_name_Cell_Objects)
     
 
 

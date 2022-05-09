@@ -20,7 +20,7 @@ def softmax(valueset): # Exponential
     
 
 # Distance/Activity dependent
-def Form_Synapse(GCs, MFs, MF_activities):
+def Form_Synapse(GCs, MFs):
     for GC in [cell for cell in GCs if cell.flag_arrived_final_destination\
                                      and len(cell.synapse_partners)==0]:
         distance_values=[] #distribution of distance        
@@ -60,6 +60,25 @@ def Form_Synapse(GCs, MFs, MF_activities):
             GC.synapse_partners.append(mf)
             mf.synapse_partners.append(GC)
 
+def Initial_Contacts(GCs, MFs):
+    for GC in [cell for cell in GCs if cell.flag_arrived_final_destination\
+                                     and len(cell.synapse_partners)==0]:
+        distance_values=[] #distribution of distance        
+        activity_values=[]
+        INDICES_MFs=np.arange(len(MFs))
+        for mf in MFs:  
+            distance_values.append(distance(GC, mf))
+            activity_values.append(mf.activity_level)            
+            #sorted_distance_values=distance_values.sort(reverse=True)
+        Contact_rate_by_distance = softmax(distance_values)
+
+        IND_initial_contacts=np.random.choice(INDICES_MFs, 10, \
+                        replace=False, p=Contact_rate_by_distance) #draw 10 mfs by distance    
+        synapsed_MFs=[MFs[ind] for ind in IND_initial_contacts]
+        
+        for mf in synapsed_MFs:
+            GC.synapse_partners.append(mf)
+            mf.synapse_partners.append(GC)
 """ 
 # Distance/Activity dependent
 def Form_Synapse(GCs, MFs, MF_activities):

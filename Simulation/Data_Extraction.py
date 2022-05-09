@@ -4,16 +4,15 @@ from .Parameters import *
 import os
 import numpy as np
 
-def data_save(data_name, data):
-    cur_path = os.path.dirname(os.path.realpath(__file__))
-    directory = cur_path+'/data'
+def data_save(data_name, data, PATH):
+    #cur_path = os.path.dirname(os.path.realpath(__file__))
+    directory = PATH +'/data'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    save_dir=directory+'/'+data_name
-    print('Data:', data_name,'Saved at:',save_dir)
-    np.save(save_dir, data)
-    print('Data:', data_name,'Saved at:',save_dir)
+    save_as=directory+'/'+data_name
+    np.save(save_as, data)
+    print('Data', data_name,'Saved at:',PATH)
     
 def data_load(data_name):
     cur_path = os.path.dirname(os.path.realpath(__file__))
