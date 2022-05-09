@@ -17,6 +17,22 @@ import matplotlib.pyplot as plt
 import time
 import sys
 
+""" OS Check """
+import os
+import platform
+import sysconfig
+print('OS Check...')
+print("os.name                     ", os.name)
+print("sys.platform                ", sys.platform)
+print("platform.system()           ", platform.system())
+print("sysconfig.get_platform()    ", sysconfig.get_platform())
+print("platform.machine()          ", platform.machine())
+print("platform.architecture()     ", platform.architecture())
+if platform.system()!= "Windows":
+    import txaio  
+    txaio.use_asyncio()
+""" -------------- """
+
 #from hanging_threads import start_monitoring
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
