@@ -2,6 +2,9 @@
 By Ikhwan Jeon, 2kaijeon@gmail.com<br/>
 Supervisor: Dr. Taegon Kim<br/>
 
+Required Libraries:
+Numpy, Matplotlibe, VPython, Seaborn
+
 Configuration:
 -Physical Settings: Num_childs, Num_parents, Layer_expansion<br/>
 -For debugging: Simulation_on, GC_implementation, vpython, time_sleep<br/>
