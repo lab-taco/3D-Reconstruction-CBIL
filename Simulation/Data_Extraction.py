@@ -14,9 +14,8 @@ def data_save(data_name, data, PATH):
     np.save(save_as, data)
     print('Data', data_name,'Saved at:',PATH)
     
-def data_load(data_name):
-    cur_path = os.path.dirname(os.path.realpath(__file__))
-    directory = cur_path+'/data'
+def data_load(data_name, PATH):    
+    directory = PATH+'/data'
     #load= np.load(directory+'/'+ data_name+'.npy')
     load= np.load(directory+'/'+ data_name+'.npy', allow_pickle=True)
     return load

@@ -165,7 +165,7 @@ class Cells:
         self.init_position=init_position
         self.color=color_
         self.flag_arrived_final_destination=False
-        self.synapse_partners=[]
+        self.synapse_partners=[] #as indices
         self.vpytyhon=vpython
         if cell_type=='MFR':
             self.cell_type='MFR'

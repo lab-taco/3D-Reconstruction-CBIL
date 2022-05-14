@@ -11,6 +11,6 @@ print("sysconfig.get_platform()    ", sysconfig.get_platform())
 print("platform.machine()          ", platform.machine())
 print("platform.architecture()     ", platform.architecture())
 if platform.system()!= "Windows":
-    import txaio  
+    import txaio
     txaio.use_asyncio()
 """ -------------- """
