@@ -20,14 +20,12 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     GC_Objects, MF_Objects, GC_Colormap, MF_Colormap = load_all(DATA_FOLDER, DATA_PATH, Print=True)
     Num_GCs=len(GC_Objects)
     Num_MFs=len(MF_Objects)
+    #len_synapse(GCs, MFs) -------------------------------------------
     
-    for ind, gc in enumerate(GC_Objects):
-        print(ind,'th gc color', gc.color)
-    sys.exit()
     if ANALYSIS_SPATIAL_DISTRIBUTION:
         print('------ANALYSIS_SPATIAL_DISTRIBUTION...-------------------------------')
-        
-
+        data_extraction_3d(GC_Objects)
+    sys.exit()
     if ANALYSIS_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')
         print('Statistics of the number of synaptic partners...')
@@ -35,8 +33,9 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         connectivity_statistics(MF_Objects, Cell_type='MF')
         print('')
 
-        print('Edge analysis...')
-        Edges = extract_edges(MF_Objects)       
+        #print('Edge analysis...')
+        #Edges = extract_edges(MF_Objects)
+        #Edges2 = extract_edges2(MF_Objects) #generalized
         #print('Edge type:', type(Edges), 'Edges shape:', np.shape(np.array(Edges, dtype=object))\
         #    , 'Edge[0] type:', type(Edges[0])) 
         #To use Numpy with the Lists with varying size of rows, use np.array(list, dtype=object)
@@ -47,14 +46,26 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         mean_x, std_x= Statistics_distribution(ratio_distribution)
         print('Stats of the Reconstructed Network')
         print('mean_x:', mean_x, 'std_x:', std_x, 'var_x:', np.var(ratio_distribution))
+        cumu_x, cumu_y = cumulative_distribution(ratio_distribution, print_dist=True)
+        sys.exit()
 
         Repetition_for_stat=10
         random_mean, random_std = Statistics_Randomly_Connected_Cells(Num_MFs, Num_GCs, MF_Colormap, GC_Colormap, \
             Num_Repeat=Repetition_for_stat)
-
-        shuffled_mean, shuffled_std = Statistics_Shuffled_Cells()
-        print('Stat difference to Random Net')
+        print('Random Net Stat difference')
         print('mean difference:', mean_x-random_mean, 'std difference:', std_x-random_std )
+
+        Replica_MF_Objects, Replica_GC_Objects = Replicate_Sample_Cells(MF_Objects, GC_Objects)
+        #BEFOR SHUFFL
+        ratio_distribution = connectivity_ratio_distribution(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap)
+        mean_x, std_x= Statistics_distribution(ratio_distribution)
+        print('Stats of the REPLICA Network before shuffling')
+        print('mean_x:', mean_x, 'std_x:', std_x, 'var_x:', np.var(ratio_distribution))
+
+        mean_shuffled, std_shuffled = Statistics_Shuffled_Cells(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap, Num_Repeat=10)      
+        print('Shuffled Net Stat difference')
+        #CDF_comparison_of_shuffling??
+        print('mean difference:', mean_x-mean_shuffled, 'std difference:', std_x-std_shuffled )
 
         if PLOT_CUMU_DIST:
             cumu_x, cumu_y = cumulative_distribution(ratio_distribution, print_dist=False)
@@ -98,4 +109,5 @@ if __name__ == '__main__':
         args.ANALYSIS_SPATIAL_DISTRIBUTION, args.ANALYSIS_CONNECTIVITY)
 
     elapsed_time = time.time() - start_time
+    print('-------Analysis ended---------------------------')
     print('Total elapsed time for analysis:', elapsed_time)  

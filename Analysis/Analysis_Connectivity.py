@@ -8,7 +8,7 @@ def connectivity_statistics(Cells, Cell_type='GC'):
          '  mean:', np.mean(num_syn_partners), 'std:', np.round(np.std(num_syn_partners),2))
     
 
-
+"""
 def extract_edges(MFs): # edges element structure: [Ind MF, Ind GC], Type: <Class, 'List'>
     edges_for_all_MFs=[]
     for ind_mf, mf in enumerate(MFs):
@@ -17,9 +17,19 @@ def extract_edges(MFs): # edges element structure: [Ind MF, Ind GC], Type: <Clas
         for ind_gc in indices_synapsed:
             edges_mf.append([ind_mf, ind_gc])
             #edges_mf.append([index, GCs.index(syn_partner), [GCs[GCs.index(syn_partner)].color] ]) #color?       
-        edges_mf.append(mf.color)        
+        #edges_mf.append(mf.color)
         edges_for_all_MFs.append(edges_mf)
-    return edges_for_all_MFs
+    return edges_for_all_MFs"""
+
+def extract_edges2(Cells): # generalized edges element structure: [Ind Cell, Ind Syn Partner], Type: <Class, 'List'>
+    edges_for_all_Cells=[]
+    for ind_cell, cell in enumerate(Cells):
+        indices_synapsed=cell.synapse_partners
+        edges_cell=[] 
+        for ind_syn_partner in indices_synapsed:
+            edges_cell.append([ind_cell, ind_syn_partner])
+        edges_for_all_Cells.append(edges_cell)
+    return edges_for_all_Cells
 
 def print_dist_stats(distribution):
     print('{:<5}'.format('min:'), '{:>10}'.format(np.round(min(distribution),3)),\
@@ -79,7 +89,7 @@ def Statistics_Randomly_Connected_Cells(Num_MFs, Num_GCs, MF_Colormap, GC_Colorm
     Averaging_mean_randomnet=[]
     Averaging_STD_randomnet=[]
     
-    for _ in range(10):        
+    for _ in range(Num_Repeat):        
         Sample_MFs, Sample_GCs = randomly_conencted_sample_cells(Num_MFs, Num_GCs, MF_Colormap, GC_Colormap)
         Sample_ratio_dist=connectivity_ratio_distribution(Sample_MFs, Sample_GCs, GC_Colormap)
         mean, std= Statistics_distribution(Sample_ratio_dist)
@@ -124,14 +134,41 @@ def shuffling(node_GC, node_MF, edges, gc_color_map, eval_shf_func=False): #shuf
     edges=np.ndarray.tolist(edges)
     return edges
 
-def synaptic_partner_shuffling(edges, MFs, GCs):
-    for eg in edges:
-        pass
+def synaptic_partner_shuffling(MFs, GCs, GC_colormap, target_subgroup): #target_subgroups: 0=early, 2 =late
+    GC_target_group = [gc for gc in GCs if gc.color==GC_colormap[target_subgroup]]
+    target_edges = extract_edges2(GC_target_group) # [GC, MF] pairing
+    #np.random.shuffle(target_edges)
+    permuted_edges=np.random.permutation(target_edges)
 
+    for ind, edge in enumerate(permuted_edges):
+        ind_partner_MF=edge[1]
+        GC_target_group[ind].synapse_partners=ind_partner_MF
+    
+    for mf in MFs: #Initialization
+        mf.synapse_partners=[]
 
-def Statistics_Shuffled_Cells():
-    shuffled_mean, shuffled_std= nan, nan
-    return shuffled_mean, shuffled_std
+    for gc_ind, gc in enumerate(GCs):
+        for syn_pt in gc.synapse_partners:
+            MFs[syn_pt].synapse_partners.append(gc_ind)
+
+    #return MFs, GCs
+        
+
+def Statistics_Shuffled_Cells(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap, Num_Repeat=10):
+    Averaging_mean_shuffled=[]
+    Averaging_STD_shuffled=[]
+    
+    edges1 = extract_edges2(Replica_MF_Objects)
+    for _ in range(Num_Repeat):
+        synaptic_partner_shuffling(Replica_MF_Objects, Replica_GC_Objects,  GC_Colormap, target_subgroup=0)
+        shufflededges = extract_edges2(Replica_MF_Objects)
+        ratio_distribution_shuffled = connectivity_ratio_distribution(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap)
+        mean, std = Statistics_distribution(ratio_distribution_shuffled)
+        print('m:', mean, 's:',std)
+        Averaging_mean_shuffled.append(mean)
+        Averaging_STD_shuffled.append(std)
+    mean_shuffled, std_shuffled= np.mean(Averaging_mean_shuffled), np.mean(Averaging_STD_shuffled)   
+    return mean_shuffled, std_shuffled
 
 def broadness_difference(node_GC, node_MF, ed_list):
     unshuffled=neuralnet4(node_GC, node_MF, ed_list, \
