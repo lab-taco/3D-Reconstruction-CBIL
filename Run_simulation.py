@@ -188,11 +188,15 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     
     if not Save_name_Cell_Objects=='No save':
         from datetime import date, datetime    
-        now=datetime.now().strftime("%d-%m-%Y-%H%M")
-        data_name=Save_name_Cell_Objects+'_{}{}_{}'.format('Num_parents',str(Num_parents),'time')+now
-        data_save(data_name+'_GCs', GCs, DATA_PATH)
-        data_save(data_name+'_MFs', MFs, DATA_PATH)
-    
+        save_time=datetime.now().strftime("%d-%m-%Y-%H%M")        
+        data_label='{}{}'.format(str(Num_parents),'Parents')
+
+        #data_save(data_name, data, PATH, dir_name)
+        data_save('GC_Objects'+data_label, GCs, DATA_PATH, save_time)
+        data_save('MF_Objects'+data_label, MFs, DATA_PATH, save_time)
+
+        data_save('GC_Colormap'+data_label, Color_map_GC, DATA_PATH, save_time)
+        data_save('MF_Colormap'+data_label, Color_map_MF, DATA_PATH, save_time)
     
     sys.exit()
     #early=[]

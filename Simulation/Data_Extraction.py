@@ -4,21 +4,45 @@ from .Parameters import *
 import os
 import numpy as np
 
-def data_save(data_name, data, PATH):
+def data_save(data_name, data, PATH, dir_name):
+
     #cur_path = os.path.dirname(os.path.realpath(__file__))
-    directory = PATH +'/data'
+    directory = PATH +'/data/'+dir_name
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     save_as=directory+'/'+data_name
     np.save(save_as, data)
-    print('Data', data_name,'Saved at:',PATH)
+    print('Data', data_name,'Saved at:', directory)
     
-def data_load(data_name, PATH):    
-    directory = PATH+'/data'
+def data_load(data_name, PATH):
     #load= np.load(directory+'/'+ data_name+'.npy')
-    load= np.load(directory+'/'+ data_name+'.npy', allow_pickle=True)
+    load= np.load(PATH+'/'+ data_name, allow_pickle=True)
     return load
+
+def load_all(folder_name, PATH, Print=True):
+    Location=PATH+'/data/'+folder_name    
+    contents = os.listdir(Location)
+    for c in contents:
+        if 'GC_Objects' in c:
+            GC_Objects = np.ndarray.tolist(data_load(c, Location))
+        elif 'MF_Objects' in c:
+            MF_Objects = np.ndarray.tolist(data_load(c, Location))
+        elif 'GC_Colormap' in c:
+            GC_Colormap = np.ndarray.tolist(data_load(c, Location))
+        elif 'MF_Colormap' in c:
+            MF_Colormap = np.ndarray.tolist(data_load(c, Location))
+    
+    if Print:
+        print('Data Loaded from:', Location)
+        type_and_shape('GC_Objects', GC_Objects)
+        type_and_shape('MF_Objects', MF_Objects)
+        type_and_shape('GC_Colormap', GC_Colormap)
+        type_and_shape('MF_Colormap', MF_Colormap)
+    return GC_Objects, MF_Objects, GC_Colormap, MF_Colormap
+
+def type_and_shape(Name, data):
+    print(str(Name), 'type:', type(data), 'data shape:', np.shape(data))
 
 
 import pickle
