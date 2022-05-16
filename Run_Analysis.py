@@ -5,7 +5,9 @@ from Simulation.Data_Extraction import *
 from Analysis.Analysis_Connectivity import *
 from Analysis.Analysis_Spatial_dist import *
 from Analysis.Slicing import *
+from Analysis.Analysis_K_Function import *
 from Simulation.Parameters import *
+from Analysis.Helper_shapely import *
 from vpython import *
 import numpy as np
 import math
@@ -14,9 +16,13 @@ import matplotlib.pyplot as plt
 DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GCs'
 DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
 
-DATA_FOLDER='14-05-2022-1333'
-PLOT_SPATIAL_DIST=False
+#DATA_FOLDER='14-05-2022-1333'
+DATA_FOLDER ='16-05-2022-2348'
+
+PLOT_SPATIAL_DIST=True
 PLOT_CUMU_DIST=False
+PLOT_CONVEX_HULL = True
+K_ANALYSIS=True
 def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
 
     print('-------Data Loading...----------------------------------------------------')
@@ -28,21 +34,54 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     if ANALYSIS_SPATIAL_DISTRIBUTION:
         Map_size_3D= [area_length, area_width, height_PCL]
         Map_size_2D= [area_length, height_PCL]
-        Cell_radii=[radius_MFR, radius_GC]
+        Cell_radii=[radius_MFR, radius_GC]        
         print('------ANALYSIS_SPATIAL_DISTRIBUTION...-------------------------------')
         #data_extraction_3d(GC_Objects, Map_size_2D, radius_GC, PLOTTING=True)
         #data_extraction_2d(GC_Objects, Map_size_2D, radius_GC, PLOTTING=True)
-        
+        #View_3D_Dist(MF_Objects, GC_Objects)
+        print('Density of Cells in Total Volume:', \
+            (len(GC_Objects)+len(MF_Objects))/(area_length*area_width*height_PCL))
+
         MF_Captured, GC_Captured = Capture_Cells_at_Slice(MF_Objects, GC_Objects, \
                         Map_size_3D, Cell_radii, \
                         PLOTTING=PLOT_SPATIAL_DIST, Where_to_Slice='Random')
-        Position_MFs=[[mf.body.pos.x, mf.body.pos.y] for mf in MF_Captured]
-        Position_GCs=[[gc.body.pos.x, gc.body.pos.y] for gc in GC_Captured]
-        #np.array(Position_MFs)[:, 0], np.array(Position_MFs)[:, 1]
-        #np.array(Position_GCs)[:, 0], np.array(Position_GCs)[:, 1]
-        random_dist = random_scattering(100, Map_size_2D, plotting=PLOT_SPATIAL_DIST)
-        regular_dist = regular_scattering(num_grid=10, Map_size_2D=Map_size_2D, plotting=PLOT_SPATIAL_DIST)
+        #sys.exit()
+        Position_MFs=np.asarray([[mf.body.pos.x, mf.body.pos.y] for mf in MF_Captured])
+        Position_GCs=np.asarray([[gc.body.pos.x, gc.body.pos.y] for gc in GC_Captured])
+        
+        MF_CvH=point_dist_to_convex_hull(Position_MFs, plotting=PLOT_CONVEX_HULL, plot_label='Cnvx_ MFs')        
+        GC_CvH=point_dist_to_convex_hull(Position_GCs, plotting=PLOT_CONVEX_HULL, plot_label='Cnvx_ GCs')
+        plt.scatter(Position_MFs[:, 0], Position_MFs[:, 1], label='MFs')
+        plt.scatter(Position_GCs[:, 0], Position_GCs[:, 1], label='GCs')
+        plt.title('Convex Hulls')
+        plt.legend()
+        plt.show()
 
+        BASE_DIST=True
+        if BASE_DIST:
+            PLOT_BASELINE=False
+            random_dist = random_scattering(100, Map_size_2D, plotting=PLOT_BASELINE)
+            regular_dist = regular_scattering(num_grid=10, Map_size_2D=Map_size_2D, plotting=PLOT_BASELINE)
+
+        if K_ANALYSIS:            
+            FUNCTION='L'
+            plotting_KFunc=False
+            L_random  = my_K_func(random_dist, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION,graph=plotting_KFunc, return_L=True)
+            L_regular = my_K_func(regular_dist, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION, graph=plotting_KFunc, return_L=True)
+            L_MFs = my_K_func(Position_MFs, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION, graph=plotting_KFunc, return_L=True)
+            L_GCs = my_K_func(Position_GCs, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION, graph=plotting_KFunc, return_L=True)
+            plt.plot(L_random[:,0], L_random[:,1], color='k', label='random dist')
+            plt.plot(L_regular[:,0], L_regular[:,1], color='y', label='regular dist')
+            plt.plot(L_MFs[:,0], L_MFs[:,1], color='b', label='MFs')
+            plt.plot(L_GCs[:,0], L_GCs[:,1], color='red', label='GCs')
+            plt.plot(L_GCs[:,0], np.zeros(len(L_GCs[:,0])), color='c', ls=':', label=r'$L_{pois}$') 
+            plt.title('Spatial Analysis using L function')
+            plt.legend()
+            plt.show()
     sys.exit()
     if ANALYSIS_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')
@@ -104,7 +143,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--GC_object_name', type=str, dest='data_name_GCs',
-                        default=DEFEAULT_GC_object_data,
+                        default='DEFEAULT_GC_object_data',
                         help='The saved GC Object data name')
     
     parser.add_argument('--MF_object_name', type=str, dest='data_name_MFs',

@@ -291,8 +291,6 @@ def my_K_func(data, graph=False, rt_L=False, rt_clut=False, cutoff=0, geo=False)
     if rt_L:
         return l[:, 1]
 
-#def squaring(data, height_range=[0, height_PCL]):
-
 def f_cutoff(data, cutoff_val):    
     for points in data:
         #print('eq',points[1],'-',cutoff_val,'=',points[1]-cutoff_val)
@@ -300,7 +298,7 @@ def f_cutoff(data, cutoff_val):
     return data
 
 
-def squaring(data, ceiling=height_PCL, bottom=0):
+def squaring(data, ceiling=height_PCL, bottom=0): #cut off by square boundaring
     
     list_del=[]
     for i in enumerate(data):

@@ -198,7 +198,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         data_save('GC_Colormap'+data_label, Color_map_GC, DATA_PATH, save_time)
         data_save('MF_Colormap'+data_label, Color_map_MF, DATA_PATH, save_time)
     
-    sys.exit()
+    sys.exit()  #Ver. 220514
     #early=[]
     #late=[]
     #for cell in GCs:

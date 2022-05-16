@@ -11,11 +11,11 @@ import sys
 def my_K_func(data, Map_size_2D, cell_radius, function_type = 'K', graph=False, \
                 return_L=False, rt_clut=False, cutoff=0, geo=False):
     x_axis, y_axis = Map_size_2D
-    for data_point in data:
-        if data_point[0]>x_axis:
-            raise Exception('migration misleading')
-        if data_point[1]>y_axis:
-            raise Exception('migration misleading')
+    #for data_point in data:
+    #    if data_point[0]>x_axis:
+    #        raise Exception('migration misleading')
+    #    if data_point[1]>y_axis:
+    #        raise Exception('migration misleading')
     
     Convex_hull_ofdatapoints = MultiPoint(data).convex_hull
     #area=x_axis*(y_axis/2)
@@ -27,16 +27,12 @@ def my_K_func(data, Map_size_2D, cell_radius, function_type = 'K', graph=False, 
     r_min=cell_radius*2
     #r_max=sqrt(area/2)
     r_max=int(x_axis/2)
-    r = np.linspace(r_min, r_max, r_max-r_min+1) #radius
+    r = np.linspace(r_min, r_max, r_max-r_min+1) #radii of inspection
 
     k=[]
     l=[]
     poi=[]
-    #print('calculating K function...')
-    #mp=MultiPoint(data)    
-    #cvh = mp.convex_hull
-    #Convex_hull_ofdatapoints = Polygon(data)
-    
+    print('calculating K function...')
     for t in r:        
         total_sum=0
         #for i in [point for point in list(enumerate(data))]: #enumerate(data) = index, value
@@ -90,8 +86,10 @@ def my_K_func(data, Map_size_2D, cell_radius, function_type = 'K', graph=False, 
             raise Exception('negative total sum for K Function of', t, 'radius')
         #homgen_k = np.math.pi*(t**2)
         #print('homogenous: %f, actual k: %f'% (homgen_k, k_t))
-        k.append([t,k_t])
-        l.append([t,np.sqrt(k_t/math.pi)-t])
+        k.append([t, k_t])
+        #l.append([t, np.sqrt(k_t/math.pi)-t])
+        l.append([t, np.sqrt(k_t/math.pi)-t])
+        #l_poi=np.sqrt(Kest.poisson(r)/math.pi)
         
     k=np.asarray(k)
     l=np.asarray(l)
@@ -108,7 +106,7 @@ def my_K_func(data, Map_size_2D, cell_radius, function_type = 'K', graph=False, 
         #same with plt.plot(r, math.pi*r**2)
         plt.plot(r, Kest(data, r, mode='ripley'), \
                 color='black', label=r'$K_{ripley}$')    
-        plt.plot(k[:,0], k[:,1], label=r'$My K$') #K function
+        plt.plot(k[:,0], k[:,1], label=r'$K_{My_K}$') #K function
 
         #plt.plot(r, Kest(data=data, radii=r, mode='none'), color='red', ls='--', label=r'$K_{un}$')
         #plt.plot(r, Kest(data=data, radii=r, mode='translation'), color='black', ls=':', label=r'$K_{trans}$')
@@ -134,7 +132,7 @@ def my_K_func(data, Map_size_2D, cell_radius, function_type = 'K', graph=False, 
         print('The degree of clustering:', degree_of_clustering)        
         return degree_of_clustering
     if return_L:
-        return l
+        return l  #<< L not 1
 
 
 import numpy as np
@@ -181,13 +179,14 @@ def edge_correction_convexhull(data_point ,t, Convex_hull_ofdatapoints, simplifi
     #plt.plot(*simple_circle.exterior.xy, label='circle')
     #plt.legend()
     #plt.show()
-        
+    computational_tolerance=math.pi*(t**2)-circle.area #min precision in circle area estimation
     if circle.intersects(Convex_hull_ofdatapoints):
         intersections = circle.intersection(Convex_hull_ofdatapoints).area
         #print('calc:', math.pi*(t**2), 'circle.area', circle.area) 
         #return math.pi*(t**2)/(math.pi*(t**2)-intersections)
         #print(circle.area, intersections)
-        return circle.area/intersections
+        if intersections<=computational_tolerance: return 1
+        else: return circle.area/intersections
     elif intersections<0:
         raise Exception('intersections:', intersections, 'Wrong calculation for edge correction')
     else: return 0

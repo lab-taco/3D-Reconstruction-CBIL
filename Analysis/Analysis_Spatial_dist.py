@@ -105,12 +105,12 @@ def random_scattering(num_cells, Map_size_2D, plotting=False, \
             plt.show()
     arr=np.asarray(arr)
     if plotting:        
-        plt.scatter(arr[:,0], arr[:,1])
-        plt.xlim(-1,42)
-        plt.ylim(-1,42)
-        plt.title('Random Spatial Sampling, Num Cells:{}'.format(str(num_cells)))
-        #plt.legend(title='Num Cells:{}'.format(str(num_cells)))
-        plt.show()   
+        plt.scatter(arr[:,0], arr[:,1], label='Random dist.')
+        #plt.xlim(-1,42)
+        #plt.ylim(-1,42)
+        #plt.title('Random Spatial Sampling, Num Cells:{}'.format(str(num_cells)))
+        ##plt.legend(title='Num Cells:{}'.format(str(num_cells)))
+        #plt.show()   
     
     return arr
 
@@ -124,10 +124,10 @@ def regular_scattering(num_grid, Map_size_2D, plotting=False):
     if plotting:
         print(np.shape(arr))
         arr=np.asarray(arr)
-        plt.scatter(arr[:,0], arr[:,1])
-        plt.xlim(-1,x_axis)
-        plt.ylim(-1,y_axis)
-        plt.title('Regular Spatial Sampling, Num Grid:{}'.format(str(num_grid)))
-        #plt.legend(title='Num Grid:{}'.format(str(num_grid)))
-        plt.show()
+        plt.scatter(arr[:,0], arr[:,1], label='Regular dist.')
+        #plt.xlim(-1,x_axis)
+        #plt.ylim(-1,y_axis)
+        #plt.title('Regular Spatial Sampling, Num Grid:{}'.format(str(num_grid)))
+        ##plt.legend(title='Num Grid:{}'.format(str(num_grid)))
+        #plt.show()
     return arr
