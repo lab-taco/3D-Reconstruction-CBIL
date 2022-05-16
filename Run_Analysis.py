@@ -3,7 +3,9 @@ import imp
 from Simulation.Data_Extraction import *
 
 from Analysis.Analysis_Connectivity import *
-
+from Analysis.Analysis_Spatial_dist import *
+from Analysis.Slicing import *
+from Simulation.Parameters import *
 from vpython import *
 import numpy as np
 import math
@@ -13,6 +15,7 @@ DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GC
 DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
 
 DATA_FOLDER='14-05-2022-1333'
+PLOT_SPATIAL_DIST=False
 PLOT_CUMU_DIST=False
 def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
 
@@ -23,8 +26,23 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     #len_synapse(GCs, MFs) -------------------------------------------
     
     if ANALYSIS_SPATIAL_DISTRIBUTION:
+        Map_size_3D= [area_length, area_width, height_PCL]
+        Map_size_2D= [area_length, height_PCL]
+        Cell_radii=[radius_MFR, radius_GC]
         print('------ANALYSIS_SPATIAL_DISTRIBUTION...-------------------------------')
-        data_extraction_3d(GC_Objects)
+        #data_extraction_3d(GC_Objects, Map_size_2D, radius_GC, PLOTTING=True)
+        #data_extraction_2d(GC_Objects, Map_size_2D, radius_GC, PLOTTING=True)
+        
+        MF_Captured, GC_Captured = Capture_Cells_at_Slice(MF_Objects, GC_Objects, \
+                        Map_size_3D, Cell_radii, \
+                        PLOTTING=PLOT_SPATIAL_DIST, Where_to_Slice='Random')
+        Position_MFs=[[mf.body.pos.x, mf.body.pos.y] for mf in MF_Captured]
+        Position_GCs=[[gc.body.pos.x, gc.body.pos.y] for gc in GC_Captured]
+        #np.array(Position_MFs)[:, 0], np.array(Position_MFs)[:, 1]
+        #np.array(Position_GCs)[:, 0], np.array(Position_GCs)[:, 1]
+        random_dist = random_scattering(100, Map_size_2D, plotting=PLOT_SPATIAL_DIST)
+        regular_dist = regular_scattering(num_grid=10, Map_size_2D=Map_size_2D, plotting=PLOT_SPATIAL_DIST)
+
     sys.exit()
     if ANALYSIS_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')

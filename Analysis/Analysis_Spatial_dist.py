@@ -2,11 +2,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-
-def data_extraction_3d(cells):
-    
+def data_extraction_3d(cells, Map_size_2D, radius_GC, PLOTTING=False):
+    x_axis, y_axis = Map_size_2D
     print('extracting data...')
-    inspection_range=np.linspace(0+1, area_width-1, area_width+1-2)
+    inspection_range=np.linspace(0+1, x_axis-1, x_axis+1-2)
 
     total_inspection=[]
     for ins_plain in inspection_range:
@@ -15,7 +14,7 @@ def data_extraction_3d(cells):
             distance= cell.body.pos.z - ins_plain #distance from center
             if abs(distance)< radius_GC:
             #distance=cell.body.pos.z
-            #if cell.body.pos.z>0.5*area_width-radius_GC:
+            #if cell.body.pos.z>0.5*x_axis-radius_GC:
                 cell_coordinate=[ round(cell.body.pos.x, 3)\
                                  ,round(cell.body.pos.y, 3)\
                                  ,round(distance, 3) ]
@@ -44,21 +43,20 @@ def data_extraction_3d(cells):
             print('There is no cells for',ind,'-th', data_name)
         plt.show()'''
 
-def data_extraction_2d(cells, data_name, FLAG_save):
+def data_extraction_2d(cells, Map_size_2D, radius_GC, PLOTTING=False):
+    x_axis, y_axis = Map_size_2D
     inspect=[]
     for cell in cells:        
-        #distance= cell.body.pos.z - 0.5*area_width    #distance from center
+        #distance= cell.body.pos.z - 0.5*x_axis    #distance from center
         #if abs(distance)< radius_GC:
-        if cell.body.pos.z>0.5*area_width-radius_GC:
+        if cell.body.pos.z>0.5*x_axis-radius_GC:
             inspect.append([round(cell.body.pos.x, 8)\
                             , round(cell.body.pos.y,8)])
     inspect=np.asarray(inspect)
 
-    if FLAG_save:
-        data_save(data_name, inspect)
-    
-    plt.scatter(inspect[:,0], inspect[:,1])
-    plt.show()
+    if PLOTTING:
+        plt.scatter(inspect[:,0], inspect[:,1])
+        plt.show()
 
 import math
 def Euclidean_dist(x2, y2, x1, y1):
@@ -69,7 +67,8 @@ def sample_xy_coor_random(domain_x, domain_y):
     x = np.random.random_integers(0, domain_x)
     y = np.random.random_integers(0, domain_y)
     return x, y
-def random_scattering(num_cells, Map_size_2D, plotting=False, exclusion_zone=False, append_arr=[]):
+def random_scattering(num_cells, Map_size_2D, plotting=False, \
+                    exclusion_zone=False, append_arr=[]):
     N=num_cells
     x_axis, y_axis = Map_size_2D
     arr=[]
@@ -109,13 +108,13 @@ def random_scattering(num_cells, Map_size_2D, plotting=False, exclusion_zone=Fal
         plt.scatter(arr[:,0], arr[:,1])
         plt.xlim(-1,42)
         plt.ylim(-1,42)
-        plt.title('Random Spatial Sampling')
-        plt.legend(title='Num Cells:{}'.format(str(num_cells)))
+        plt.title('Random Spatial Sampling, Num Cells:{}'.format(str(num_cells)))
+        #plt.legend(title='Num Cells:{}'.format(str(num_cells)))
         plt.show()   
     
     return arr
 
-def regular_scattering(num_grid, Map_size_2D, plotting=False):    
+def regular_scattering(num_grid, Map_size_2D, plotting=False):
     arr=[]
     x_axis, y_axis = Map_size_2D
     for i in range(0, num_grid):
@@ -128,7 +127,7 @@ def regular_scattering(num_grid, Map_size_2D, plotting=False):
         plt.scatter(arr[:,0], arr[:,1])
         plt.xlim(-1,x_axis)
         plt.ylim(-1,y_axis)
-        plt.title('Regular Spatial Sampling')
-        plt.legend(title='Num Grid:{}'.format(str(num_grid)))
+        plt.title('Regular Spatial Sampling, Num Grid:{}'.format(str(num_grid)))
+        #plt.legend(title='Num Grid:{}'.format(str(num_grid)))
         plt.show()
     return arr
