@@ -41,13 +41,17 @@ def print_dist_stats(distribution):
 
 def plot_distributions_together(data_to_plot):
     import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.6, 0.75])
     for data in data_to_plot:
         mean=np.round(np.mean(data[0]), 3)
         var =np.round(np.std (data[0]), 3)
         label=data[-1]+'u:'+str(mean)+' var:'+str(var)
-        plt.plot(data[0], data[1], label=label)
+        ax.plot(data[0], data[1], label=label)
+    
+    #plt.legend()
+    ax.legend(bbox_to_anchor=(1, 0.5), loc="lower left")
     plt.title('Cumulative Distribution Comparison')
-    plt.legend()
     plt.show()
 
 def cumulative_distribution(distribution, label_cdf='CDF', print_dist=False):

@@ -44,7 +44,7 @@ def MF_activity_coordinator_separatedactivities(time_step, time_division):
 def sign_curv_function(time_steps, curv_width, t_division, \
                         t_shift=0, peak_val=10, superpose=0, bias=1):
     val_func=bias*np.ones(time_steps)
-    len_curve=curv_width*t_division+superpose
+    len_curve=curv_width*t_division+superpose*5
     curve_at_time=peak_val*np.sin((np.pi*(np.arange(len_curve))/len_curve))
     val_func[t_shift:t_shift+len_curve]+=curve_at_time
     return val_func
@@ -52,15 +52,18 @@ def sign_curv_function(time_steps, curv_width, t_division, \
 def curvs_generations(num_curvs, t_division, PK=10, SP=100, draw=False):
     #num_curvs: Mig_Timing_Variation, SP: Superposing degree, PK= Peak Value, 
     P7=24*7
+    Early_start=10
+    
     #P6=24*6
     P14=24*14
     t=np.arange(24*20*t_division)
-    cw=P7//num_curvs
+    cw=P7//(num_curvs-1) #Curve Width
     #print('len t', len(t), 'len curv', cw, 'P6', P6*t_division, 'P14',P14*t_division)
     curvs=[]
-    for curv in range(num_curvs):    
+    for ind_curv in range(num_curvs):
+        time_shift=((P7-Early_start)+cw*ind_curv*(1-SP/100))*t_division+(P14-P7)/10*SP/100
         act_curve = sign_curv_function(len(t), cw, t_division,\
-                 t_shift=(P7+cw*curv)*t_division, peak_val=PK, superpose=SP)
+                 t_shift=int(time_shift), peak_val=PK, superpose=SP)
         #print('curve', curv, 'at', (P6+cw*curv)*t_division)
         curvs.append(act_curve)
         
@@ -74,7 +77,7 @@ def curvs_generations(num_curvs, t_division, PK=10, SP=100, draw=False):
         plt.xlabel('time')
         plt.ylabel('activity')
         plt.text(len(t)*0.75, min(cv)+1, "Superposing=%d"%SP)
-        plt.text(len(t)*0.1, min(cv), "bias=%d"%min(cv))
+        #plt.text(len(t)*0.1, min(cv), "bias=%d"%min(cv))
         plt.legend()
         plt.show()
     return curvs

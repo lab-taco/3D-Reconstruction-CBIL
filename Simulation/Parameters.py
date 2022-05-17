@@ -30,7 +30,7 @@ GC_Mig_Timing_Variation=3
 
 simulation_time=24*20*time_division  #20days each 24 hours
 
-DEFEAULT_Num_parents=100
+DEFEAULT_Num_parents=110
 DEFEAULT_Num_childs=10
 
 
