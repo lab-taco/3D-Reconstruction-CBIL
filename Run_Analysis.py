@@ -19,7 +19,7 @@ from Analysis.Modularity import *
 DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GCs'
 DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
 
-DATA_FOLDER='14-05-2022-1333' #simple model
+#DATA_FOLDER='14-05-2022-1333' #simple model
 #DATA_FOLDER ='16-05-2022-2348' # large population
 DATA_FOLDER='SP50'
 
@@ -27,8 +27,8 @@ PLOT_BASELINE=False
 PLOT_SPATIAL_DIST=True
 PLOT_Connectivity_CDF=False
 PLOT_CONVEX_HULL = False
-K_ANALYSIS=False
-NND_ANALYSIS=True
+K_ANALYSIS=True
+NND_ANALYSIS=False
 def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
 
     print('-------Data Loading...----------------------------------------------------')
@@ -42,8 +42,8 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     
     D=1
     #Num_MFs=10
-    overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
-    sys.exit()
+    #overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
+    #sys.exit()
     ANALYSIS_SPATIAL_DISTRIBUTION=True
     if ANALYSIS_SPATIAL_DISTRIBUTION:
         Map_size_3D= [area_length, area_width, height_PCL]
@@ -52,19 +52,29 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         print('------ANALYSIS_SPATIAL_DISTRIBUTION...-------------------------------')
         #data_extraction_3d(GC_Objects, Map_size_2D, radius_GC, PLOTTING=True)
         #data_extraction_2d(GC_Objects, Map_size_2D, radius_GC, PLOTTING=True)
-        View_3D_Dist(MF_Objects, GC_Objects)
+        #View_3D_Dist(MF_Objects, GC_Objects)
         print('Density of Cells in Total Volume:', \
             (len(GC_Objects)+len(MF_Objects))/(area_length*area_width*height_PCL))
 
-        MF_Captured, GC_Captured = Capture_Cells_at_Slice(MF_Objects, GC_Objects, \
-                        Map_size_3D, Cell_radii, \
+        
+        #MF_Captured, GC_Captured = Capture_Cells_at_Slice(MF_Objects, GC_Objects, \
+        #                Map_size_3D, Cell_radii, \
+        #                PLOTTING=PLOT_SPATIAL_DIST, Where_to_Slice='Random')
+
+        MF_Captured, E_Captured, M_Captured, L_Captured = Capture_Cells_at_Slice_group_separation(MF_Objects, GC_Objects, \
+                        GC_Colormap, Map_size_3D, Cell_radii, \
                         PLOTTING=PLOT_SPATIAL_DIST, Where_to_Slice='Random')
+
+        GC_Captured =E_Captured+ M_Captured+ L_Captured
         #sys.exit()
         Position_MFs=np.asarray([[mf.body.pos.x, mf.body.pos.y] for mf in MF_Captured])
         Position_GCs=np.asarray([[gc.body.pos.x, gc.body.pos.y] for gc in GC_Captured])
+        Position_E=np.asarray([[gc.body.pos.x, gc.body.pos.y] for gc in E_Captured])
+        Position_M=np.asarray([[gc.body.pos.x, gc.body.pos.y] for gc in M_Captured])
+        Position_L=np.asarray([[gc.body.pos.x, gc.body.pos.y] for gc in L_Captured])
         
         
-        Num_cell=len(GC_Captured)
+        Num_cell=len(Position_E)
         Volume=Map_size_2D[0]*Map_size_2D[1]
         Density=Num_cell/Volume
         GRIDs=int(math.sqrt(Density*Volume))
@@ -79,14 +89,20 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         
         if NND_ANALYSIS:
             GC_NND, rnge_NNDgc = nearest_neighbor_distance_distribution(Position_GCs , Map_size_2D[0])
+            EGC_NND, rnge_NNDE = nearest_neighbor_distance_distribution(Position_E , Map_size_2D[0])
+            MGC_NND, rnge_NNDG = nearest_neighbor_distance_distribution(Position_M , Map_size_2D[0])
+            LGC_NND, rnge_NNDL = nearest_neighbor_distance_distribution(Position_L , Map_size_2D[0])
             MF_NND, rnge_NNDmf = nearest_neighbor_distance_distribution(Position_MFs , Map_size_2D[0])
             Rand_NND, rnge_NNDrnd = nearest_neighbor_distance_distribution(random_dist , Map_size_2D[0])
             Reglr_NND, rnge_NNDrglr = nearest_neighbor_distance_distribution(regular_dist , Map_size_2D[0])
 
             NND_List = [[GC_NND, rnge_NNDgc, 'GCs'], [MF_NND, rnge_NNDmf, 'MFs'], \
+                         [EGC_NND, rnge_NNDE, 'Early GCs'], [MGC_NND, rnge_NNDG, 'Mid GCs'], \
+                            [LGC_NND, rnge_NNDL, 'Late GCs'], [MF_NND, rnge_NNDmf, 'MFs'], \
                         [Rand_NND, rnge_NNDrnd, 'Rand'], [Reglr_NND, rnge_NNDrglr, 'Reglr']]
             Plot_NND_all_together(NND_List)
-            sys.exit()
+            #sys.exit()
+            """
             Plot_NND(GC_NND, range_NND, plotting_type='cdf', plot_label='GCs')
             Plot_NND(MF_NND, range_NND, plotting_type='cdf', plot_label='MFs')
             Plot_NND(Rand_NND, range_NND, plotting_type='cdf', plot_label='Rand')
@@ -101,17 +117,24 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             Plot_NND(Reglr_NND, range_NND, plotting_type='hist', plot_label='Reglr')
             plt.title('Nearest Neighbor Distance, Hist')
             plt.legend()                                          
-            plt.show()
+            plt.show()"""
 
         if K_ANALYSIS:
             Plot_Convex_Hull=True
             if Plot_Convex_Hull:
+                
                 MF_CvH=point_dist_to_convex_hull(Position_MFs, plotting=PLOT_CONVEX_HULL, plot_label='CvxH MFs')        
                 GC_CvH=point_dist_to_convex_hull(Position_GCs, plotting=PLOT_CONVEX_HULL, plot_label='CvxH GCs')
+                E_CvH=point_dist_to_convex_hull(Position_E, plotting=PLOT_CONVEX_HULL, plot_label='CvxH GCs')
+                M_CvH=point_dist_to_convex_hull(Position_M, plotting=PLOT_CONVEX_HULL, plot_label='CvxH GCs')
+                L_CvH=point_dist_to_convex_hull(Position_L, plotting=PLOT_CONVEX_HULL, plot_label='CvxH GCs')
                 RD_CvH=point_dist_to_convex_hull(random_dist, plotting=PLOT_CONVEX_HULL, plot_label='CvxH Rand')
                 RG_CvH=point_dist_to_convex_hull(regular_dist, plotting=PLOT_CONVEX_HULL, plot_label='CvxH Reglr')
                 plt.scatter(Position_MFs[:, 0], Position_MFs[:, 1], label='MFs')
                 plt.scatter(Position_GCs[:, 0], Position_GCs[:, 1], label='GCs')
+                plt.scatter(Position_E[:, 0], Position_E[:, 1], label='GCs E')
+                plt.scatter(Position_M[:, 0], Position_M[:, 1], label='GCs M')
+                plt.scatter(Position_L[:, 0], Position_L[:, 1], label='GCs L')
                 rd=np.array(random_dist)
                 rg=np.array(regular_dist)
                 plt.scatter(rd[:,0], rd[:,1], label='Rand dist., Num Cells:'+str(len(random_dist)))
@@ -131,16 +154,25 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
                                 function_type=FUNCTION, graph=plotting_each_Func, return_L=True)
             L_GCs = my_K_func(Position_GCs, Map_size_2D, radius_GC, \
                                 function_type=FUNCTION, graph=plotting_each_Func, return_L=True)
+            L_GCsE = my_K_func(Position_E, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION, graph=plotting_each_Func, return_L=True)
+            L_GCsM = my_K_func(Position_M, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION, graph=plotting_each_Func, return_L=True)
+            L_GCsL = my_K_func(Position_L, Map_size_2D, radius_GC, \
+                                function_type=FUNCTION, graph=plotting_each_Func, return_L=True)
             plt.plot(L_random[:,0], L_random[:,1], color='k', label='random dist')
             plt.plot(L_regular[:,0], L_regular[:,1], color='y', label='regular dist')
             plt.plot(L_MFs[:,0], L_MFs[:,1], color='b', label='MFs')
             plt.plot(L_GCs[:,0], L_GCs[:,1], color='red', label='GCs')
+            plt.plot(L_GCsE[:,0], L_GCsE[:,1], label='GC E')
+            plt.plot(L_GCsM[:,0], L_GCsM[:,1], label='GC M')
+            plt.plot(L_GCsL[:,0], L_GCsL[:,1], label='GC L')
             plt.plot(L_GCs[:,0], np.zeros(len(L_GCs[:,0])), color='c', ls=':', label=r'$L_{pois}$') 
             plt.title('Spatial Analysis using L function')
             plt.legend()
             plt.show()
             
-
+    sys.exit()
     if ANALYSIS_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')
         print('Statistics of the number of synaptic partners...')

@@ -43,6 +43,57 @@ def Capture_Cells_at_Slice(MF_Objects, GC_Objects, Map_size_3D, Cell_radii, \
 
     return MF_Captured, GC_Captured
 
+def Capture_Cells_at_Slice_group_separation(MF_Objects, GC_Objects, gc_colormap, Map_size_3D, Cell_radii, \
+                        PLOTTING=True, Where_to_Slice='Random'):
+    len_x_axis, len_y_axis, len_z_axis= Map_size_3D #X, Y, Z = area length, height PCL, area width
+    radius_MFR, radius_GC = Cell_radii
+    Visible_range=radius_MFR*8
+    Visible_volume = Visible_range*2*len_x_axis*len_y_axis
+
+    if Where_to_Slice=='Random': # Slice in the center half
+        Slicing_Point=np.random.choice(int(len_z_axis/2))+int(len_z_axis/2)
+    
+    Early= [gc for gc in GC_Objects if gc.color==gc_colormap[0]]
+    Mid= [gc for gc in GC_Objects if gc.color==gc_colormap[1]]
+    Late= [gc for gc in GC_Objects if gc.color==gc_colormap[-1]]
+
+    MF_Captured=[]
+    E_Captured=[]
+    M_Captured=[]
+    L_Captured=[]
+
+    All_cells=MF_Objects+GC_Objects
+    for cell in All_cells:
+        if cell.body.pos.z+cell.radius<=Slicing_Point+Visible_range\
+        and cell.body.pos.z-cell.radius>=Slicing_Point-Visible_range:
+            if cell in MF_Objects: MF_Captured.append(cell)
+            elif cell in Early: E_Captured.append(cell)
+            elif cell in Mid: M_Captured.append(cell)
+            elif cell in Late: L_Captured.append(cell)
+
+    GC_Captured=E_Captured+M_Captured+L_Captured
+    Num_Captured = len(MF_Captured)+len(GC_Captured)
+    print('Density Captured by Slicing:', Num_Captured/Visible_volume)
+    if PLOTTING:
+        if len(MF_Captured+GC_Captured)>0:
+            Position_MFs=[[mf.body.pos.x, mf.body.pos.y] for mf in MF_Captured]
+            Position_E=[[gc.body.pos.x, gc.body.pos.y] for gc in E_Captured]
+            Position_M=[[gc.body.pos.x, gc.body.pos.y] for gc in M_Captured]
+            Position_L=[[gc.body.pos.x, gc.body.pos.y] for gc in L_Captured]
+            
+            plt.scatter(np.array(Position_MFs)[:, 0], np.array(Position_MFs)[:, 1], label='MFs:'+str(len(MF_Captured)))
+            plt.scatter(np.array(Position_E)[:, 0], np.array(Position_E)[:, 1], label='E_GCs:'+str(len(E_Captured)))
+            plt.scatter(np.array(Position_M)[:, 0], np.array(Position_M)[:, 1], label='M_GCs:'+str(len(M_Captured)))
+            plt.scatter(np.array(Position_L)[:, 0], np.array(Position_L)[:, 1], label='L_GCs:'+str(len(L_Captured)))
+            plt.legend(title='Captured Cells')
+            plt.title('Sliced surface')
+            plt.show()
+        else:
+            print('There is no cells in the slice, \
+                try adjust visible points or increase cell populaion size')
+
+    return MF_Captured, E_Captured, M_Captured, L_Captured
+
 def Show_slice(normal_cells, injected_cells):
     radius_scale=1
     cr = shapes.circle(radius=1*radius_scale, thickness=0.1)
