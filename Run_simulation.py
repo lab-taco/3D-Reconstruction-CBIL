@@ -38,11 +38,12 @@ if platform.system()!= "Windows":
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
 #collision_check_duration=6
-
+Superposing=0
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
                 Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
     start_time = time.time()
+    
     print('-------Parameter status-----------------------------\n'\
         , 'Num_childs:', Num_childs, 'Num_parents:', Num_parents, 'Simulation:',Simulation_on\
         , 'Blink:',Blink,'\nGC_implementation:',GC_implementation, 'Layer_expansion:',Layer_expansion\
@@ -55,7 +56,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Simulation_on=True
     #GC_implementation=False
     #vpython=Falses
-    time_sleep=True     
+    time_sleep=False     
     Analysis_on=not Simulation_on
 
     #Calculate number of cells
@@ -112,8 +113,8 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     FLAG_SYNAPSTIC_FORMATION=True 
     #End_Time=21*24*time_division
     #End_Time=20*24*time_division
-
-    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation, time_division)
+    
+    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=False)
     if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
     while(Simulation_on and not P20_passed): #main loop
         #gives time final GCs to finish migration and form syanpse
@@ -205,7 +206,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     if not Save_name_Cell_Objects=='No save':
         from datetime import date, datetime    
         save_time=datetime.now().strftime("%d-%m-%Y-%H%M")        
-        data_label='{}{}'.format(str(Num_parents),'Parents')
+        data_label='SP{}_{}{}'.format(str(Superposing), str(Num_parents),'Parents')
 
         #data_save(data_name, data, PATH, dir_name)
         data_save('GC_Objects'+data_label, GCs, DATA_PATH, save_time)

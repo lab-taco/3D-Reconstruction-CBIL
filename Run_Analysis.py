@@ -12,12 +12,14 @@ from vpython import *
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
+import openpyxl
 
 DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GCs'
 DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
 
-#DATA_FOLDER='14-05-2022-1333' #simple model
-DATA_FOLDER ='16-05-2022-2348' # large population
+DATA_FOLDER='14-05-2022-1333' #simple model
+#DATA_FOLDER ='16-05-2022-2348' # large population
 
 PLOT_BASELINE=False
 PLOT_SPATIAL_DIST=True
@@ -33,6 +35,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     Num_MFs=len(MF_Objects)
     #len_synapse(GCs, MFs) -------------------------------------------
     
+    print('Num GCs:', Num_GCs, 'Num MFs:', Num_MFs)
     #GC_synaptic_partner_exchange(MF_Objects, GC_Objects, GC_Colormap, Size=3, D=1)
     #sys.exit()
     ANALYSIS_SPATIAL_DISTRIBUTION=False
@@ -174,7 +177,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         #print('mean_x:', mean_x, 'std_x:', std_x, 'var_x:', np.var(ratio_distribution))
         #sys.exit()
         #AFTER SHUFFL
-        SIZE_EXCHANGE = 10
+        SIZE_EXCHANGE = 10 
         D_ROUNDS=2
         ratio_distribution_shuffled, mean_shuffled, std_shuffled = \
             Statistics_Shuffled_Cells(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap,\
@@ -190,6 +193,16 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             data_to_plot = [[cumu_x, cumu_y,               'Reconstructed'],
                             [sample_cumu_x, sample_cumu_y, 'Rndmly-cnnctd'],
                             [Shuffled_cumu_x, Shuffled_cumu_y, 'Shuffled']]
+
+            
+            print('np.shape(cumu_x)',np.shape(cumu_x), \
+                'np.shape(cumu_y)',np.shape(cumu_y), type(cumu_x))
+            Concat=np.vstack((cumu_x, cumu_y)).T
+            print('np.concat(cumu_x)',np.shape(Concat))
+            #print(Concat)
+            #sys.exit()
+            #df = pd.DataFrame(Concat, columns = ['x','y'])
+            #df.to_excel('Connectivity_Reconstructed.xlsx')
             plot_distributions_together(data_to_plot)
         
         
