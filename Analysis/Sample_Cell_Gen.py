@@ -10,7 +10,8 @@ class Sample_cells_with_synapses:
         elif cell_type=='GC':
             self.cell_type='GC'
 
-def randomly_conencted_sample_cells(Num_MFs, Num_GCs, colormap_mf, colormap_gc):    
+def randomly_conencted_sample_cells(Num_MFs, Num_GCs, colormap_mf, colormap_gc, \
+                                    add_MF=0, add_GC=0):    
     Sample_MF_Objects=[]
     for _ in range(Num_MFs):
         sample_mf=Sample_cells_with_synapses('MF', np.random.choice(colormap_mf))        
@@ -20,10 +21,10 @@ def randomly_conencted_sample_cells(Num_MFs, Num_GCs, colormap_mf, colormap_gc):
     for ind_gc in range(Num_GCs):
         sample_gc=Sample_cells_with_synapses('GC', np.random.choice(colormap_gc))
         synaptic_partners=np.random.choice(Num_MFs, size=4, replace=False)
-        sample_gc.synapse_partners=sorted(synaptic_partners)
+        sample_gc.synapse_partners=sorted(synaptic_partners+add_MF)
         Sample_GC_Objects.append(sample_gc)
         for ind_sp in synaptic_partners:
-            Sample_MF_Objects[ind_sp].synapse_partners.append(ind_gc)
+            Sample_MF_Objects[ind_sp].synapse_partners.append(ind_gc+add_GC)
    
     return Sample_MF_Objects, Sample_GC_Objects
 

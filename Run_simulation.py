@@ -22,7 +22,7 @@ import time
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
 #collision_check_duration=6
-Superposing=0
+Superposing=35
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
                 Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):

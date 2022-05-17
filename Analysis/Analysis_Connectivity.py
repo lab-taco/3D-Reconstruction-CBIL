@@ -43,15 +43,18 @@ def plot_distributions_together(data_to_plot):
     import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.6, 0.75])
+    mean=[]
+    std=[]
     for data in data_to_plot:
-        mean=np.round(np.mean(data[0]), 3)
-        var =np.round(np.std (data[0]), 3)
-        label=data[-1]+'u:'+str(mean)+' var:'+str(var)
+        mean.append(np.round(np.mean(data[0]), 3))
+        std.append(np.round(np.std (data[0]), 3))
+        label=data[-1] #,+'u:'+str(mean)+' std:'+str(std)
         ax.plot(data[0], data[1], label=label)
-    
+    print('Broadness Difference:', std[1]-std[0])
     #plt.legend()
-    ax.legend(bbox_to_anchor=(1, 0.5), loc="lower left")
+    lgd = ax.legend(bbox_to_anchor=(1, 0.5), loc="lower left")
     plt.title('Cumulative Distribution Comparison')
+    #fig.savefig('SP65.png', dpi=300, format='png', bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.show()
 
 def cumulative_distribution(distribution, label_cdf='CDF', print_dist=False):
@@ -104,58 +107,6 @@ def Statistics_Randomly_Connected_Cells(Num_MFs, Num_GCs, MF_Colormap, GC_Colorm
     random_mean, random_std= np.mean(Averaging_mean_randomnet), np.mean(Averaging_STD_randomnet)
     return random_mean, random_std, Sample_ratio_dist
 
-def shuffling(node_GC, node_MF, edges, gc_color_map, eval_shf_func=False): #shuffle the synapses between target GC groups and MF groups    
-    
-    total_early_gc_edges2=[]
-    for mf in node_MF: # For selected MFs (sub) group
-        early_gc_edges=[]
-        for edge in [eg for eg in edges if eg[0]==mf]: # For whole edges with the mf            
-            if gc_color_map[node_GC.index(edge[1])]==GC_colors[0]: #if synapsed with early GCs                
-                early_gc_edges.append(edge)                               
-        total_early_gc_edges2.append(early_gc_edges) #early GC edges list per MF
-    edges=np.array(edges)        
-    for edge_list in total_early_gc_edges2:
-        if len(edge_list)>0:
-            for edge in edge_list:
-                edges=np.delete(edges, np.where(np.all(edges==edge, axis=1)), axis=0)
-        
-    np.random.shuffle(total_early_gc_edges2)     
-    
-    for ind, edge_list in enumerate(total_early_gc_edges2):
-        if len(edge_list)>0:
-            for edge in edge_list:                
-                edge[0]='M%s'%ind
-                #print(np.shape(edges))
-                #print(np.shape([edge]))
-                #edges=np.append(edges, [edge], axis=0)
-       
-    
-    rebuilt_edges=[]    
-    for ind, edge_list in enumerate(total_early_gc_edges2):
-        if len(edge_list)>0:
-            for edge in edge_list:                
-                rebuilt_edges.append(edge)
-    
-    edges=np.concatenate((rebuilt_edges, edges), axis=0)    
-    edges=np.ndarray.tolist(edges)
-    return edges
-
-def synaptic_partner_shuffling(MFs, GCs, GC_colormap, target_subgroup): #target_subgroups: 0=early, 2 =late
-    GC_target_group = [gc for gc in GCs if gc.color==GC_colormap[target_subgroup]]
-    target_edges = extract_edges2(GC_target_group) # [GC, MF] pairing
-    #np.random.shuffle(target_edges)
-    permuted_edges=np.random.permutation(target_edges)
-
-    for ind, edge in enumerate(permuted_edges):
-        ind_partner_MF=edge[1]
-        GC_target_group[ind].synapse_partners=ind_partner_MF
-    
-    for mf in MFs: #Initialization
-        mf.synapse_partners=[]
-
-    for gc_ind, gc in enumerate(GCs):
-        for syn_pt in gc.synapse_partners:
-            MFs[syn_pt].synapse_partners.append(gc_ind)
 
     #return MFs, GCs
 def GC_synaptic_partner_exchange(MFs, GCs, GC_colormap, Size, D): 
@@ -248,24 +199,3 @@ def broadness_difference(node_GC, node_MF, ed_list):
         print(i, '-th shuffling...: std_shuffled', np.std(shuffled), 'std_diff', std_diff)
     
     return np.mean(std_diff_list)
-
-def neuralnet4(node_GC, node_MF, edges, MF_subgroup=None, \
-            plot_frequency_dist=False, draw_net=False, shuffle=False, \
-                rt_ratio=False, print_stat=True):    
-    mf_color_map = migration_timing(node_MF, MF_colors)    
-    gc_color_map = migration_timing(node_GC, GC_colors)
-    
-    indices = target_MF_indexing(node_MF, MF_subgroup)
-    node_MF, mf_color_map = node_pruning(indices, mf_color_map, node_MF)
-    edges                 = edge_pruning(node_MF, edges)
-    if shuffle: edges = shuffling(node_GC, node_MF, edges, gc_color_map)
-    
-    if draw_net: draw_network(gc_color_map, mf_color_map, edges, node_GC, node_MF)
-    
-    ratios=frequency_distribution(node_MF, node_GC, edges, gc_color_map)    
-    if plot_frequency_dist: plot_degree_dist(ratios)        
-
-    total_early, total_mid, total_late = frecuency_MF(node_MF, node_GC, edges, gc_color_map)
-    if print_stat: print_connectivity_stats(total_early, total_mid, total_late, MF_subgroup, node_MF)
-    #print('variance:', np.var(ratios))    
-    if rt_ratio: return ratios

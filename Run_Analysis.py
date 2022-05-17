@@ -14,16 +14,18 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import openpyxl
+from Analysis.Modularity import *
 
 DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GCs'
 DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
 
 DATA_FOLDER='14-05-2022-1333' #simple model
 #DATA_FOLDER ='16-05-2022-2348' # large population
+DATA_FOLDER='SP50'
 
 PLOT_BASELINE=False
 PLOT_SPATIAL_DIST=True
-PLOT_Connectivity_CDF=True
+PLOT_Connectivity_CDF=False
 PLOT_CONVEX_HULL = False
 K_ANALYSIS=False
 NND_ANALYSIS=True
@@ -37,8 +39,12 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     
     print('Num GCs:', Num_GCs, 'Num MFs:', Num_MFs)
     #GC_synaptic_partner_exchange(MF_Objects, GC_Objects, GC_Colormap, Size=3, D=1)
-    #sys.exit()
-    ANALYSIS_SPATIAL_DISTRIBUTION=False
+    
+    D=1
+    #Num_MFs=10
+    overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
+    sys.exit()
+    ANALYSIS_SPATIAL_DISTRIBUTION=True
     if ANALYSIS_SPATIAL_DISTRIBUTION:
         Map_size_3D= [area_length, area_width, height_PCL]
         Map_size_2D= [area_length, height_PCL]
@@ -134,7 +140,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             plt.legend()
             plt.show()
             
-        
+
     if ANALYSIS_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')
         print('Statistics of the number of synaptic partners...')
@@ -153,20 +159,22 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         print('------------Measuring Conenctivity Preference...----------------------------------------------')
         ratio_distribution = connectivity_ratio_distribution(MF_Objects, GC_Objects, GC_Colormap)
         data_mean_x, data_std_x= Statistics_distribution(ratio_distribution)
-        print('Stats of the Reconstructed Network')
+        print('Stats of the Reconstructed Network', DATA_FOLDER)
         print('mean_x:', data_mean_x, 'std_x:', data_std_x, 'var_x:', np.var(ratio_distribution))
+        
         #cumu_x, cumu_y = cumulative_distribution(ratio_distribution, \
         #    label_cdf='GC-MF Ratio', print_dist=True)
         #sys.exit()
 
-        Repetition_for_stat=10
+        Repetition_for_stat=100
         random_mean, random_std, Random_Sample_ratio_dist\
              = Statistics_Randomly_Connected_Cells(Num_MFs, Num_GCs, \
                                                     MF_Colormap, GC_Colormap, \
                                                     Num_Repeat=Repetition_for_stat)
         print('Random Net Stat difference')
+        print('mean:', random_mean, 'std:', random_std )
         print('mean difference:', data_mean_x-random_mean, 'std difference:', data_std_x-random_std )
-
+        #sys.exit()
         Replica_MF_Objects, Replica_GC_Objects = Replicate_Sample_Cells(MF_Objects, GC_Objects)
         #BEFOR SHUFFL
         Replica_ratio_dist = connectivity_ratio_distribution(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap)
@@ -189,12 +197,14 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         if PLOT_Connectivity_CDF:
             cumu_x, cumu_y = cumulative_distribution(ratio_distribution, label_cdf='GC-MF Ratio', print_dist=False)
             sample_cumu_x, sample_cumu_y = cumulative_distribution(Random_Sample_ratio_dist, print_dist=False)
-            Shuffled_cumu_x, Shuffled_cumu_y = cumulative_distribution(ratio_distribution_shuffled, print_dist=False)
+            print('len cumu_x', len(cumu_x))
+            #Shuffled_cumu_x, Shuffled_cumu_y = cumulative_distribution(ratio_distribution_shuffled, print_dist=False)
             data_to_plot = [[cumu_x, cumu_y,               'Reconstructed'],
-                            [sample_cumu_x, sample_cumu_y, 'Rndmly-cnnctd'],
-                            [Shuffled_cumu_x, Shuffled_cumu_y, 'Shuffled']]
+                            [sample_cumu_x, sample_cumu_y, 'Rndmly-cnnctd']] #,
+                            #[Shuffled_cumu_x, Shuffled_cumu_y, 'Shuffled']]
 
-            
+            plot_distributions_together(data_to_plot)
+            sys.exit()
             print('np.shape(cumu_x)',np.shape(cumu_x), \
                 'np.shape(cumu_y)',np.shape(cumu_y), type(cumu_x))
             Concat=np.vstack((cumu_x, cumu_y)).T
@@ -203,7 +213,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             #sys.exit()
             #df = pd.DataFrame(Concat, columns = ['x','y'])
             #df.to_excel('Connectivity_Reconstructed.xlsx')
-            plot_distributions_together(data_to_plot)
+            
         
         
 
