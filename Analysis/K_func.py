@@ -2,7 +2,7 @@ import numpy as np
 from math import *
 from matplotlib import pyplot as plt
 #from astropy.stats import RipleysKEstimator
-from function import *
+#from function import *
 
 def Rieman_sum(t, dist, radius):    #intersection, intersection to circumference, radius    
     num_fraction=dist-t+1   #each 1
@@ -40,6 +40,7 @@ def area_segment_corner(u, v, r, decision_code=None): # relative distance from t
         raise Exception('negative RY')
     area=Y+R
     return area
+
 def Euclidean_dist(x2, y2, x1, y1):
     return sqrt((x2-x1)**2+(y2-y1)**2)
 
@@ -158,9 +159,9 @@ def edge_correction(x_i, y_i, radius, height_PCL=height_PCL, area_length=area_le
 '''
 #from K_func import *
 import geopandas as gpd
-import geoplot
+import geoplot'''
 from shapely.geometry import MultiPoint
-from shapely.geometry import Point'''
+from shapely.geometry import Point
 def edge_correction2(point):
     pass
 
@@ -290,8 +291,6 @@ def my_K_func(data, graph=False, rt_L=False, rt_clut=False, cutoff=0, geo=False)
     if rt_L:
         return l[:, 1]
 
-#def squaring(data, height_range=[0, height_PCL]):
-
 def f_cutoff(data, cutoff_val):    
     for points in data:
         #print('eq',points[1],'-',cutoff_val,'=',points[1]-cutoff_val)
@@ -299,7 +298,7 @@ def f_cutoff(data, cutoff_val):
     return data
 
 
-def squaring(data, ceiling=height_PCL, bottom=0):
+def squaring(data, ceiling=height_PCL, bottom=0): #cut off by square boundaring
     
     list_del=[]
     for i in enumerate(data):
@@ -413,7 +412,7 @@ def recon_2d_slice(load, load2,load3, load4):
 
                 
 
-def regular_scattering(length):
+def regular_scattering(length, Map_size):
     leng=length
     arr=[]
     for i in range(0, leng):
