@@ -1,4 +1,5 @@
-
+*.xlsx
 *.pyc
 *.npy
 Test.py
+Screenshot*

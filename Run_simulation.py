@@ -15,7 +15,24 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt 
 import time
-import sys
+
+
+
+""" OS Check """
+import os
+import platform
+import sysconfig
+print('OS Check...')
+print("os.name                     ", os.name)
+print("sys.platform                ", sys.platform)
+print("platform.system()           ", platform.system())
+print("sysconfig.get_platform()    ", sysconfig.get_platform())
+print("platform.machine()          ", platform.machine())
+print("platform.architecture()     ", platform.architecture())
+if platform.system()!= "Windows":
+    import txaio  
+    txaio.use_asyncio()
+""" -------------- """
 
 """ OS Check """
 import os
@@ -36,25 +53,26 @@ if platform.system()!= "Windows":
 #from hanging_threads import start_monitoring
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
-
-
 #collision_check_duration=6
-
+Superposing=0
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
-                Save_name_Synapses, Save_name_cell_locations):
+                Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
     start_time = time.time()
-    print('-------Parameter status-----------------------------\n',\
-        'Num_childs:', Num_childs, 'Num_parents:', Num_parents, 'Simulation:',Simulation_on\
-            , 'Blink:',Blink,'\nGC_implementation:',GC_implementation, 'Layer_expansion:',Layer_expansion\
-            , 'vpython:',vpython, 'time_sleep:',time_sleep, '\n'\
-            , 'Save_name_Synapses:',Save_name_Synapses, 'Save_name_cell_locations:',Save_name_cell_locations\
-            ,'\n-------------------------------------    ------------------')
+    
+    print('-------Parameter status-----------------------------\n'\
+        , 'Num_childs:', Num_childs, 'Num_parents:', Num_parents, 'Simulation:',Simulation_on\
+        , 'Blink:',Blink,'\nGC_implementation:',GC_implementation, 'Layer_expansion:',Layer_expansion\
+        , 'vpython:',vpython, 'time_sleep:', time_sleep)
+    print('-----------DATA Save Name----------------------\n'\
+        , 'Synapses:',Save_name_Synapses, 'Cell_locations:',Save_name_cell_locations\
+        , 'Cell_Objects:',Save_name_Cell_Objects)
+    print('DATA_PATH:', DATA_PATH, '\n-------------------------------------------------------')
     #Save_name_Synapses, Save_name_cell_locations='save_tmp', 'save_tmp'
     Simulation_on=True
     #GC_implementation=False
     #vpython=Falses
-    time_sleep=True     
+    time_sleep=False     
     Analysis_on=not Simulation_on
 
     #Calculate number of cells
@@ -107,11 +125,12 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Num_variation_GC_color = GC_Mig_Timing_Variation
     Color_map_GC = colormap(Num_variation_GC_color, 'GC')
     current_num_GCs=0  #current num cell
-    Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False 
+    Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False
+    FLAG_SYNAPSTIC_FORMATION=True 
     #End_Time=21*24*time_division
     #End_Time=20*24*time_division
-
-    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation, time_division)
+    
+    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=False)
     if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
     while(Simulation_on and not P20_passed): #main loop
         #gives time final GCs to finish migration and form syanpse
@@ -145,7 +164,8 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                 P14_passed=True   #at the end of P14, take all MFs into collision control process
                 MFs_migration_complete(MFs)
                 all_cells=GCs + MFs
-                all_superposition_check(all_cells)                        
+                all_superposition_check(all_cells)
+                                    
 
             #IGL expansion
             #if time_display.counter<len(depth_IGL_table):
@@ -157,14 +177,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                 #if P20_passed: IGL_expansion.expansion_end()
             #Calculation of MF Molecular Activity
             #MF_activities=MF_activity_coordinator(time_display.counter, time_division)
-            Sum_mf_activities=0 # For the calculation of synapse contact probabiligy, later
-            for mf in MFs:
-                mig_ind = Color_map_MF.index(mf.color)                
-                mf.activity_level=MF_activity_pattern[mig_ind][time_display.counter]
-            
-            
-                
-            Sum_mf_activities+=mf.activity_level           
+                    
 
             #Generation of GCs
             if GC_implementation and not P20_passed:
@@ -182,19 +195,23 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             #Molecule_absorption(GCs, MFs, collision_check_cells=target_cells, vpython=vpython)
             Stop_or_not(GCs, target_cells, vpython)
             if current_num_GCs>0:
-                if not GCs[0].flag_arrived_final_destination and Sum_mf_activities<0:
-                    print('Sum_mf_activities < 0 at time:', time_display.counter)
-                    #print('Sum_mf_activities > 0 at time:', time_display.counter)
-                else:
-                    Form_Synapse(GCs, MFs, Sum_mf_activities)
+                if GCs[0].flag_arrived_final_destination:
+                    Sum_mf_activities=MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, time_display)
+                    if Sum_mf_activities<0: 
+                        print('Sum_mf_activities < 0 at time:', time_display.counter)                    
+                    else:
+                        Form_Synapse(GCs, MFs, Sum_mf_activities)
+                        #Initial_Contacts(GCs, MFs)
 
             time_display.time_count() # count time steps for postnatal days
             if time_display.counter==20*24*time_division: P20_passed=True # 20days * 24 hours 
     print('end for now!!!!!!!!!!!!')
-    while True:
-        sleep(10)
-        pass
-    sys.exit()                
+    
+    #while True:
+    #    sleep(10)
+    #    pass
+    #sys.exit()
+
     #Simulation ends
     final_collision_check(GCs+MFs)
 
@@ -202,7 +219,19 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     print('After processes end, total elapsed time:', elapsed_time)
     
     
+    if not Save_name_Cell_Objects=='No save':
+        from datetime import date, datetime    
+        save_time=datetime.now().strftime("%d-%m-%Y-%H%M")        
+        data_label='SP{}_{}{}'.format(str(Superposing), str(Num_parents),'Parents')
+
+        #data_save(data_name, data, PATH, dir_name)
+        data_save('GC_Objects'+data_label, GCs, DATA_PATH, save_time)
+        data_save('MF_Objects'+data_label, MFs, DATA_PATH, save_time)
+
+        data_save('GC_Colormap'+data_label, Color_map_GC, DATA_PATH, save_time)
+        data_save('MF_Colormap'+data_label, Color_map_MF, DATA_PATH, save_time)
     
+    sys.exit()  #Ver. 220514
     #early=[]
     #late=[]
     #for cell in GCs:
@@ -220,8 +249,6 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     #if not GC_implementation or not Simulation_on:
     #    print('GC_implementation off, simulation off')
     #    sys.exit()
-    from datetime import date, datetime    
-    now=datetime.now().strftime("%d-%m-%Y-%H%M")
 
     #Save_name_Synapses='No save'
     Save_name_Synapses='tolerance'
@@ -238,6 +265,9 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     
         edges_for_all_MFs.append(['Num_GCs', Max_GC])
         #data_save('Volume_filling2', edges_for_all_MFs)
+
+        from datetime import date, datetime    
+        now=datetime.now().strftime("%d-%m-%Y-%H%M")
         data_name=Save_name_Synapses+'_{}_{}_{}'.format(str(Num_parents),'MFs', 'edges')+now
         data_save(data_name, edges_for_all_MFs)
 
@@ -281,7 +311,6 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
 
         print('Data extraction finished')
 
-
     
 
 import argparse
@@ -324,18 +353,23 @@ if __name__ == '__main__':
     parser.add_argument('--Save_name_Synapses', type=str, dest='Save_name_Synapses',
                         default='save_tmp',
                         help='Extract and Save the connection of Synapses made through a simulation.\
-                                imput "No save" for saving nothing')
+                                input "No save" for saving nothing')
 
     parser.add_argument('--Save_name_cell_locations', type=str, dest='Save_name_cell_locations',
                         default='save_tmp',
                         help='Save_name_cell_locations.\
-                             imput "No save" for saving nothing')
+                             input "No save" for saving nothing')
+
+    parser.add_argument('--Save_name_Cells', type=str, dest='Save_name_Cell_Objects',
+                        default='save_cell_objects',
+                        help='Save_name_cell_locations.\
+                             input "No save" for saving nothing')    
     
     args = parser.parse_args()
     
     main(args.Num_childs, args.Num_parents, args.Simulation_on, args.Blink, \
          args.GC_implementation, args.Layer_expansion, args.vpython, args.time_sleep, \
-         args.Save_name_Synapses, args.Save_name_cell_locations)
+         args.Save_name_Synapses, args.Save_name_cell_locations, args.Save_name_Cell_Objects)
     
 
 
