@@ -32,8 +32,8 @@ def Capture_Cells_at_Slice(MF_Objects, GC_Objects, Map_size_3D, Cell_radii, \
             Position_MFs=[[mf.body.pos.x, mf.body.pos.y] for mf in MF_Captured]
             Position_GCs=[[gc.body.pos.x, gc.body.pos.y] for gc in GC_Captured]
             
-            plt.scatter(np.array(Position_MFs)[:, 0], np.array(Position_MFs)[:, 1], label='MFs')
-            plt.scatter(np.array(Position_GCs)[:, 0], np.array(Position_GCs)[:, 1], label='GCs')
+            plt.scatter(np.array(Position_MFs)[:, 0], np.array(Position_MFs)[:, 1], label='MFs:'+str(len(MF_Captured)))
+            plt.scatter(np.array(Position_GCs)[:, 0], np.array(Position_GCs)[:, 1], label='GCs:'+str(len(GC_Captured)))
             plt.legend(title='Captured Cells')
             plt.title('Sliced surface')
             plt.show()
