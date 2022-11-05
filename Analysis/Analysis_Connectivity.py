@@ -1,3 +1,4 @@
+from dis import dis
 from .Sample_Cell_Gen import *
 import numpy as np
 import sys
@@ -57,9 +58,12 @@ def plot_distributions_together(data_to_plot):
     #fig.savefig('SP65.png', dpi=300, format='png', bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.show()
 
-def cumulative_distribution(distribution, label_cdf='CDF', print_dist=False):
+def cumulative_distribution(distribution, label_cdf='CDF', print_dist=False, smoothing=True):
+    if smoothing:
+        distribution+=np.random.normal(0,1, size=len(distribution))
     from statsmodels.distributions.empirical_distribution import ECDF
-    ecdf = ECDF(distribution)    
+    ecdf = ECDF(distribution)
+           
     if print_dist:
         import matplotlib.pyplot as plt 
         plt.title('ECDF')

@@ -21,14 +21,17 @@ DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MF
 
 #DATA_FOLDER='14-05-2022-1333' #simple model
 #DATA_FOLDER ='16-05-2022-2348' # large population
-DATA_FOLDER='SP50'
+DATA_FOLDER='SP0'
 
-PLOT_BASELINE=False
-PLOT_SPATIAL_DIST=True
-PLOT_Connectivity_CDF=False
-PLOT_CONVEX_HULL = False
-K_ANALYSIS=True
+PLOT_Connectivity_CDF=True
+RAND_NET=False
+SHUFFL=False
+
+K_ANALYSIS=False
 NND_ANALYSIS=False
+PLOT_BASELINE=False
+PLOT_CONVEX_HULL = False
+PLOT_SPATIAL_DIST=True
 def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
 
     print('-------Data Loading...----------------------------------------------------')
@@ -44,7 +47,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     #Num_MFs=10
     #overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
     #sys.exit()
-    ANALYSIS_SPATIAL_DISTRIBUTION=True
+    ANALYSIS_SPATIAL_DISTRIBUTION=False
     if ANALYSIS_SPATIAL_DISTRIBUTION:
         Map_size_3D= [area_length, area_width, height_PCL]
         Map_size_2D= [area_length, height_PCL]
@@ -172,7 +175,6 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             plt.legend()
             plt.show()
             
-    sys.exit()
     if ANALYSIS_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')
         print('Statistics of the number of synaptic partners...')
@@ -198,37 +200,43 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         #    label_cdf='GC-MF Ratio', print_dist=True)
         #sys.exit()
 
-        Repetition_for_stat=100
-        random_mean, random_std, Random_Sample_ratio_dist\
-             = Statistics_Randomly_Connected_Cells(Num_MFs, Num_GCs, \
-                                                    MF_Colormap, GC_Colormap, \
-                                                    Num_Repeat=Repetition_for_stat)
-        print('Random Net Stat difference')
-        print('mean:', random_mean, 'std:', random_std )
-        print('mean difference:', data_mean_x-random_mean, 'std difference:', data_std_x-random_std )
+        if RAND_NET:
+            Repetition_for_stat=100
+            random_mean, random_std, Random_Sample_ratio_dist\
+                 = Statistics_Randomly_Connected_Cells(Num_MFs, Num_GCs, \
+                                                        MF_Colormap, GC_Colormap, \
+                                                        Num_Repeat=Repetition_for_stat)
+            print('Random Net Stat difference')
+            print('mean:', random_mean, 'std:', random_std )
+            print('mean difference:', data_mean_x-random_mean, 'std difference:', data_std_x-random_std )
         #sys.exit()
-        Replica_MF_Objects, Replica_GC_Objects = Replicate_Sample_Cells(MF_Objects, GC_Objects)
-        #BEFOR SHUFFL
-        Replica_ratio_dist = connectivity_ratio_distribution(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap)
-        repl_mean_x, repl_std_x= Statistics_distribution(Replica_ratio_dist)
-        if not [repl_mean_x, repl_std_x] == [data_mean_x, data_std_x]:
-            raise Exception('Replication failed')
-        #print('Stats of the REPLICA Network before shuffling')
-        #print('mean_x:', mean_x, 'std_x:', std_x, 'var_x:', np.var(ratio_distribution))
-        #sys.exit()
-        #AFTER SHUFFL
-        SIZE_EXCHANGE = 10 
-        D_ROUNDS=2
-        ratio_distribution_shuffled, mean_shuffled, std_shuffled = \
-            Statistics_Shuffled_Cells(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap,\
-                             exchange_size = SIZE_EXCHANGE, D_rounds=D_ROUNDS, Num_Repeat=10)      
-        print('Shuffled Net Stat difference')
-        #CDF_comparison_of_shuffling??
-        print('mean difference:', data_mean_x-mean_shuffled, 'std difference:', data_std_x-std_shuffled )
+        if SHUFFL:
+            Replica_MF_Objects, Replica_GC_Objects = Replicate_Sample_Cells(MF_Objects, GC_Objects)
+            #BEFOR SHUFFL
+            Replica_ratio_dist = connectivity_ratio_distribution(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap)
+            repl_mean_x, repl_std_x= Statistics_distribution(Replica_ratio_dist)
+            if not [repl_mean_x, repl_std_x] == [data_mean_x, data_std_x]:
+                raise Exception('Replication failed')
+            #print('Stats of the REPLICA Network before shuffling')
+            #print('mean_x:', mean_x, 'std_x:', std_x, 'var_x:', np.var(ratio_distribution))
+            #sys.exit()
+            #AFTER SHUFFL
+            SIZE_EXCHANGE = 10 
+            D_ROUNDS=2
+            ratio_distribution_shuffled, mean_shuffled, std_shuffled = \
+                Statistics_Shuffled_Cells(Replica_MF_Objects, Replica_GC_Objects, GC_Colormap,\
+                                 exchange_size = SIZE_EXCHANGE, D_rounds=D_ROUNDS, Num_Repeat=10)      
+            print('Shuffled Net Stat difference')
+            #CDF_comparison_of_shuffling??
+            print('mean difference:', data_mean_x-mean_shuffled, 'std difference:', data_std_x-std_shuffled )
 
         if PLOT_Connectivity_CDF:
             cumu_x, cumu_y = cumulative_distribution(ratio_distribution, label_cdf='GC-MF Ratio', print_dist=False)
+
+            Sample_MFs, Sample_GCs = randomly_conencted_sample_cells(Num_MFs, Num_GCs, MF_Colormap, GC_Colormap)
+            Random_Sample_ratio_dist=connectivity_ratio_distribution(Sample_MFs, Sample_GCs, GC_Colormap)
             sample_cumu_x, sample_cumu_y = cumulative_distribution(Random_Sample_ratio_dist, print_dist=False)
+            
             print('len cumu_x', len(cumu_x))
             #Shuffled_cumu_x, Shuffled_cumu_y = cumulative_distribution(ratio_distribution_shuffled, print_dist=False)
             data_to_plot = [[cumu_x, cumu_y,               'Reconstructed'],

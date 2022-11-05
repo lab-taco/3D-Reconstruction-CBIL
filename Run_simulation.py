@@ -22,7 +22,11 @@ import time
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
 #collision_check_duration=6
-Superposing=35
+Superposing=100
+TWO_STEPS=True
+if TWO_STEPS: step='2step'
+else: step='1step'
+
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
                 Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
@@ -31,10 +35,8 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     print('-------Parameter status-----------------------------\n'\
         , 'Num_childs:', Num_childs, 'Num_parents:', Num_parents, 'Simulation:',Simulation_on\
         , 'Blink:',Blink,'\nGC_implementation:',GC_implementation, 'Layer_expansion:',Layer_expansion\
-        , 'vpython:',vpython, 'time_sleep:', time_sleep)
-    print('-----------DATA Save Name----------------------\n'\
-        , 'Synapses:',Save_name_Synapses, 'Cell_locations:',Save_name_cell_locations\
-        , 'Cell_Objects:',Save_name_Cell_Objects)
+        , 'vpython:',vpython, 'time_sleep:', time_sleep\
+        , 'Superposing:',Superposing, 'TWO_STEPS:',TWO_STEPS)
     print('DATA_PATH:', DATA_PATH, '\n-------------------------------------------------------')
     #Save_name_Synapses, Save_name_cell_locations='save_tmp', 'save_tmp'
     Simulation_on=True
@@ -168,7 +170,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                     if Sum_mf_activities<0: 
                         print('Sum_mf_activities < 0 at time:', time_display.counter)                    
                     else:
-                        Form_Synapse(GCs, MFs, Sum_mf_activities)
+                        Form_Synapse(GCs, MFs, Sum_mf_activities, Two_steps=TWO_STEPS)
                         #Initial_Contacts(GCs, MFs)
 
             time_display.time_count() # count time steps for postnatal days
@@ -190,7 +192,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     if not Save_name_Cell_Objects=='No save':
         from datetime import date, datetime    
         save_time=datetime.now().strftime("%d-%m-%Y-%H%M")        
-        data_label='SP{}_{}{}'.format(str(Superposing), str(Num_parents),'Parents')
+        data_label='SP{}_{}_{}{}'.format(str(Superposing), step, str(Num_parents),'Parents')
 
         #data_save(data_name, data, PATH, dir_name)
         data_save('GC_Objects'+data_label, GCs, DATA_PATH, save_time)
