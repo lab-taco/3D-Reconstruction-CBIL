@@ -1,4 +1,3 @@
-from dis import dis
 from .Sample_Cell_Gen import *
 import numpy as np
 import sys

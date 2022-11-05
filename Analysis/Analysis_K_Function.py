@@ -1,4 +1,3 @@
-from turtle import distance
 from shapely.geometry import MultiPoint
 from shapely.geometry import Point
 from shapely.geometry import Polygon
@@ -6,7 +5,6 @@ import numpy as np
 import math
 from matplotlib import pyplot as plt
 from astropy.stats import RipleysKEstimator
-import sys
 
 def my_K_func(data, Map_size_2D, cell_radius, function_type = 'K', graph=False, \
                 return_L=False, rt_clut=False, cutoff=0, geo=False):

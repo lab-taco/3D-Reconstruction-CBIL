@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 from .Sample_Cell_Gen import *
 from .Analysis_Connectivity import *
 import matplotlib.pyplot as plt

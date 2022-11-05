@@ -30,6 +30,8 @@ else: step='1step'
 def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
                 Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
+
+    sys.exit()                
     start_time = time.time()
     
     print('-------Parameter status-----------------------------\n'\

@@ -1,20 +1,20 @@
 #from Simulation.form_synapse import *
-import imp
 from Simulation.Data_Extraction import *
+
+from Simulation.Parameters import *
 
 from Analysis.Analysis_Connectivity import *
 from Analysis.Analysis_Spatial_dist import *
-from Analysis.Slicing import *
 from Analysis.Analysis_K_Function import *
-from Simulation.Parameters import *
 from Analysis.Helper_shapely import *
-from vpython import *
+from Analysis.Slicing import *
+from Analysis.Modularity import *
+
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
-import openpyxl
-from Analysis.Modularity import *
+import sys
 
 DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GCs'
 DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
@@ -32,13 +32,20 @@ NND_ANALYSIS=False
 PLOT_BASELINE=False
 PLOT_CONVEX_HULL = False
 PLOT_SPATIAL_DIST=True
+
+
 def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
+    
 
     print('-------Data Loading...----------------------------------------------------')
     GC_Objects, MF_Objects, GC_Colormap, MF_Colormap = load_all(DATA_FOLDER, DATA_PATH, Print=True)
     Num_GCs=len(GC_Objects)
     Num_MFs=len(MF_Objects)
+
+    #Num_GCs=10
+    #Num_MFs=30
     #len_synapse(GCs, MFs) -------------------------------------------
+    
     
     print('Num GCs:', Num_GCs, 'Num MFs:', Num_MFs)
     #GC_synaptic_partner_exchange(MF_Objects, GC_Objects, GC_Colormap, Size=3, D=1)
@@ -46,8 +53,9 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
     D=1
     #Num_MFs=10
     #overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
-    #sys.exit()
-    ANALYSIS_SPATIAL_DISTRIBUTION=False
+    
+    ANALYSIS_SPATIAL_DISTRIBUTION=True
+    
     if ANALYSIS_SPATIAL_DISTRIBUTION:
         Map_size_3D= [area_length, area_width, height_PCL]
         Map_size_2D= [area_length, height_PCL]
@@ -198,7 +206,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
         
         #cumu_x, cumu_y = cumulative_distribution(ratio_distribution, \
         #    label_cdf='GC-MF Ratio', print_dist=True)
-        #sys.exit()
+        
 
         if RAND_NET:
             Repetition_for_stat=100
@@ -230,6 +238,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             #CDF_comparison_of_shuffling??
             print('mean difference:', data_mean_x-mean_shuffled, 'std difference:', data_std_x-std_shuffled )
 
+        
         if PLOT_Connectivity_CDF:
             cumu_x, cumu_y = cumulative_distribution(ratio_distribution, label_cdf='GC-MF Ratio', print_dist=False)
 

@@ -1,4 +1,3 @@
-from vpython import *
 import numpy as np
 from matplotlib import pyplot as plt
 import sys
@@ -94,7 +93,9 @@ def Capture_Cells_at_Slice_group_separation(MF_Objects, GC_Objects, gc_colormap,
 
     return MF_Captured, E_Captured, M_Captured, L_Captured
 
+'''
 def Show_slice(normal_cells, injected_cells):
+    from vpython import extrusion, compound, shapes, vec
     radius_scale=1
     cr = shapes.circle(radius=1*radius_scale, thickness=0.1)
     cr_hole = shapes.circle(radius=0.9*radius_scale)
@@ -111,7 +112,7 @@ def Show_slice(normal_cells, injected_cells):
         ext=extrusion(path=[vec(i[0],i[1],i[2]), vec(i[0],i[1], i[2]+0.1)], shape=cr2, color=color.green)
         points.append(ext)
     print('Green cell done')
-
+'''
 
 def View_3D_Dist(MFs, GCs):
     fig = plt.figure()
