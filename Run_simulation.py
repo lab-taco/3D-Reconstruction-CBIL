@@ -31,7 +31,6 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, vpython, time_sleep, \
                 Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
 
-    sys.exit()                
     start_time = time.time()
     
     print('-------Parameter status-----------------------------\n'\
@@ -203,7 +202,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         data_save('GC_Colormap'+data_label, Color_map_GC, DATA_PATH, save_time)
         data_save('MF_Colormap'+data_label, Color_map_MF, DATA_PATH, save_time)
     
-    sys.exit()  #Ver. 220514
+    #sys.exit()  #Ver. 220514
     #early=[]
     #late=[]
     #for cell in GCs:
@@ -264,7 +263,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     print('# all_cells:',len(all_cells))
     #after_migration_coloring(early, all_cells)
     sleep(100000)
-    sys.exit()  
+    sys.exit()
     if not GC_implementation or not Simulation_on:
         print('GC_implementation off, simulation off')
         sys.exit()

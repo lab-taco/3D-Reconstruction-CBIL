@@ -158,7 +158,7 @@ def Form_Synapse_old(GCs, MFs, MF_activities):
             GC.synapse_partners.append(mf)
             mf.synapse_partners.append(GC)              
 
-
+"""
 def num_synapse(GCs,MFs):
     num_synapse_GC=0
     num_synapse_MF=0
@@ -173,7 +173,7 @@ def num_synapse(GCs,MFs):
 
     print('# synapse GC:',num_synapse_GC, '# GC:', len(GCs), '#synapse/GC:',num_synapse_GC/len(GCs))
     print('# synapse MF:',num_synapse_MF, '# MF:', len(MFs), '#synapse/MF:',num_synapse_MF/len(MFs))
-"""
+
 def len_synapse(GCs, MFs):
 
     sum_avg=0 #AVG. length of dendrites for individual GCs
