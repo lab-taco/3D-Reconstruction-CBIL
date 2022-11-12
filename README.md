@@ -2,6 +2,9 @@
 By Ikhwan Jeon, 2kaijeon@gmail.com<br/>
 Supervisor: Dr. Taegon Kim<br/>
 
+Poster: Ikhwan Jeon, Taegon Kim, ”Developmental modeling of modularized cerebellar input layer neural networks”, Poster presented at 25th Annual Meeting of the Korean Society for Brain and Neural Sciences. 2022 May 19; Incheon, Korea
+[PDF](https://drive.google.com/file/d/1-6HaHTQEUoZtUSzVzadXosr22OKI98Md/view?usp=sharing)
+
 Required Libraries:
 Numpy, Matplotlib, VPython, Seaborn
 
