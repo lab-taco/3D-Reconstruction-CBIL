@@ -86,10 +86,10 @@ def positions_MFs_childs(Position_parents, Num_childs):
     return positions_childs
 
 
-def sample_MFs_clusters(List_MFs, Num_parents, Num_childs, max_MF, Mig_Timing_Variation,\
+def sample_MFs_clusters(Num_parents, Num_childs, max_MF, Mig_Timing_Variation,\
                          area_length,area_width, height_PCL,\
                          static=False, vpython=True):
-    MFs=List_MFs
+    
     MF_sample_position=[]    
     for i in range(Num_parents):
         if static==True: # for sample test
@@ -103,6 +103,8 @@ def sample_MFs_clusters(List_MFs, Num_parents, Num_childs, max_MF, Mig_Timing_Va
         buf_size = max_MF//(Mig_Timing_Variation)
         if max_MF%buf_size!=0: buf_size+=1
     else: raise Exception("max_MF<Mig_Timing_Variation")    
+
+    MFs=[] #sample MFs altogether at once for random positions
     mig_timing_ind=0
     for i in range(Num_parents):
         cell_position=random_sample_2d(area_length,area_width,MF_sample_position[i])

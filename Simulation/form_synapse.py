@@ -27,7 +27,7 @@ def MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, time_display
     return Sum_mf_activities
 
 # Distance dependent initial contact and Activity dependent pruning
-def Form_Synapse(GCs, MFs, MF_activities, Normalize_activity=True, Two_steps=True):
+def Form_Synapse(GCs, MFs, MF_activities, Normalize_activity=False, Two_steps=True):
     INDICES_MFs=np.arange(len(MFs))
     for GC in [cell for cell in GCs if cell.flag_arrived_final_destination\
                                      and len(cell.synapse_partners)==0]:
@@ -37,14 +37,21 @@ def Form_Synapse(GCs, MFs, MF_activities, Normalize_activity=True, Two_steps=Tru
             distance_values.append(distance(GC, mf))
             if not Normalize_activity: activity_values.append(mf.activity_level)
             else: activity_values.append(mf.activity_level/MF_activities)
-            #sorted_distance_values=distance_values.sort(reverse=True)
         #Contact_rate_by_distance = softmax(distance_values)
         Contact_weights = np.array(activity_values)/np.array(distance_values)
+        #Contact_weights = softmax(Contact_weights)
         #distance_values=np.array(distance_values)
         
-        #print('distance_values',distance_values)
+        """ Value checking
+        print('sorted Values')
+        print('activity_values',sorted(activity_values, reverse=True))
+        print('distance_values',sorted(distance_values, reverse=True))
+        print('Contact_weights',sorted(np.ndarray.tolist(Contact_weights), reverse=True))
+        """
+        
         #print('np.log(softmax(distance_values)', np.log(softmax(distance_values)))
-        Rate_assigning=softmax
+        #Rate_assigning=softmax
+        Rate_assigning=sum_normalization
         Rate_assigning2=sum_normalization
         if Two_steps:
             Ind_Selected_MFs = Two_Step_Selection(INDICES_MFs, Contact_weights, \
@@ -182,7 +189,8 @@ def len_synapse(GCs, MFs):
         k+=1
         sum_length=0
         if len(gc.synapse_partners)>0:
-            for mf in gc.synapse_partners:
+            for ind_mf in gc.synapse_partners:
+                mf=MFs[ind_mf]
                 sum_length+=distance(gc, mf) #each dendrite's length            
             sum_avg+=sum_length/len(gc.synapse_partners) #avg_length per gc
         else:

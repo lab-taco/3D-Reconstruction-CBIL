@@ -16,12 +16,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 
-DEFEAULT_GC_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_GCs'
-DEFEAULT_MF_object_data= 'save_cell_objects_Num_parents10_time13-05-2022-1847_MFs'
 
-#DATA_FOLDER='14-05-2022-1333' #simple model
-#DATA_FOLDER ='16-05-2022-2348' # large population
-DATA_FOLDER='SP0'
+#DATA_FOLDER='16-05-2023-1711' #simple model
+#DATA_FOLDER ='16-05-2023-1723' # large population
+
+DATA_FOLDER='SP100'
+
 
 PLOT_Connectivity_CDF=True
 RAND_NET=False
@@ -34,7 +34,7 @@ PLOT_CONVEX_HULL = False
 PLOT_SPATIAL_DIST=True
 
 
-def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
+def main(ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
     
 
     print('-------Data Loading...----------------------------------------------------')
@@ -253,7 +253,7 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
                             #[Shuffled_cumu_x, Shuffled_cumu_y, 'Shuffled']]
 
             plot_distributions_together(data_to_plot)
-            sys.exit()
+
             print('np.shape(cumu_x)',np.shape(cumu_x), \
                 'np.shape(cumu_y)',np.shape(cumu_y), type(cumu_x))
             Concat=np.vstack((cumu_x, cumu_y)).T
@@ -263,7 +263,11 @@ def main(GC_data_name, MF_data_name, ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CON
             #df = pd.DataFrame(Concat, columns = ['x','y'])
             #df.to_excel('Connectivity_Reconstructed.xlsx')
             
-        
+            SAVE_Ratio_Dist=False
+            if SAVE_Ratio_Dist:
+                Name_ratio_dist='sample name'
+                Data_ratio_dist=Concat
+                data_save(Name_ratio_dist, Data_ratio_dist, DATA_PATH, DATA_FOLDER)
         
 
 
@@ -275,13 +279,6 @@ if __name__ == '__main__':
     start_time = time.time()
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--GC_object_name', type=str, dest='data_name_GCs',
-                        default='DEFEAULT_GC_object_data',
-                        help='The saved GC Object data name')
-    
-    parser.add_argument('--MF_object_name', type=str, dest='data_name_MFs',
-                        default=DEFEAULT_MF_object_data,
-                        help='The saved MF Object data name')
     
     #boolen for argparse is tricky, So used 0,1 instead
 
@@ -295,8 +292,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     #main(args.Num_childs, args.draw_dist, args.draw_net)
-    main(args.data_name_GCs, args.data_name_MFs, \
-        args.ANALYSIS_SPATIAL_DISTRIBUTION, args.ANALYSIS_CONNECTIVITY)
+    main(args.ANALYSIS_SPATIAL_DISTRIBUTION, args.ANALYSIS_CONNECTIVITY)
 
     elapsed_time = time.time() - start_time
     print('-------Analysis ended---------------------------')

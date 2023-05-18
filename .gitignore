@@ -1,7 +1,8 @@
 *.xlsx
 *.pyc
 *.npy
-Test.py
+*.ipynb
+test*
 Screenshot*
 *.png
 .DS_Store
