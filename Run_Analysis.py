@@ -15,13 +15,19 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+from vpython import *
 
+import networkx as nx
+import matplotlib.pyplot as plt
+from networkx.algorithms import bipartite
 
 #DATA_FOLDER='16-05-2023-1711' #simple model
 #DATA_FOLDER ='16-05-2023-1723' # large population
 
-DATA_FOLDER='SP100'
-
+#DATA_FOLDER='SP100-Small'
+DATA_FOLDER='SP15'
+#DATA_FOLDER='SP100'
+#DATA_FOLDER='SP0_activityonly'
 
 PLOT_Connectivity_CDF=True
 RAND_NET=False
@@ -34,13 +40,145 @@ PLOT_CONVEX_HULL = False
 PLOT_SPATIAL_DIST=True
 
 
-def main(ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
+def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     
 
-    print('-------Data Loading...----------------------------------------------------')
-    GC_Objects, MF_Objects, GC_Colormap, MF_Colormap = load_all(DATA_FOLDER, DATA_PATH, Print=True)
+    print('-------Data %s Loading...----------------------------------------------------'%DATA_FOLDER)
+    GC_Objects, MF_Objects, GC_Colormap, MF_Colormap, Graph = load_all(DATA_FOLDER, DATA_PATH, Print=True)
     Num_GCs=len(GC_Objects)
     Num_MFs=len(MF_Objects)
+
+    #Graph Data shapes
+    #print(np.shape(Graph)[0])
+    #print(Graph[0])
+    #print(Graph[0][0])
+    #print(type(Graph[0]), type(Graph[0][0]))
+    #print(GC_Colormap[0], GC_Colormap[-1])
+    #print(np.shape(GC_Colormap))
+    #print(type(GC_Colormap))
+    
+    
+    B = nx.Graph()
+
+    Num_edges=0
+    for Edges in Graph:
+        #print('Edges', Edges)
+        Num_edges+=len(Edges)
+        ind_MF=Edges[0][0]
+        node_MF = "M%d"%ind_MF 
+        B.add_node(node_MF, bipartite=0, color=MF_Objects[ind_MF], ind=ind_MF)
+
+        for edge in Edges:
+            ind_GC=edge[1]
+            node_GC = "G%d"%ind_GC
+            #node_GC = ind_GC
+
+            #B.add_node(node_MF, bipartite=0, color='red')
+            #B.add_node(node_GC, bipartite=1, color='blue')
+            B.add_node(node_GC, bipartite=1, color=GC_Objects[ind_GC], ind=ind_GC)
+            
+            #print('edge', edge, 'type:', type((Ind_MF, Ind_GC)))
+            #B.add_edges_from([(Ind_MF, Ind_GC)])
+            B.add_edge(node_MF, node_GC)
+        
+        #print(B.number_of_edges())
+        #print(B.edges())
+        #break
+    print('Graph constructed......... ->>>  B connected:', nx.is_connected(B))
+    #print(B.number_of_edges())
+    #print('Num_edges', Num_edges)
+
+
+
+    Node_MFs, Node_GCs = bipartite.sets(B)
+    print('len nodes - MF:', len(Node_MFs), 'GC:', len(Node_GCs))
+
+    ##Nodes' Sorted Indices
+    #Sorted_MFs=[]
+    #for node_ind in [mf.ind for mf in Node_MFs]:
+    #    for mf in Node_MFs:
+    #        if mf['ind']==node_ind:
+    #            Sorted_MFs.append(mf)
+    #            break
+    #
+    #print(Sorted_MFs)
+    #sys.exit()
+
+
+
+    #print('node data type:', type(Node_MFs))
+
+
+    print('One-mode Projection and Assortative coefficient calculation........')
+    Graph_onemode_MF = bipartite.projected_graph(B, Node_MFs)
+    #Assr_coeff_MFs = nx.degree_assortativity_coefficient(Graph_onemode_MF)
+    #Assr_coeff_MFs_attribute = nx.attribute_assortativity_coefficient(Graph_onemode_MF, "ind")
+    Assr_coeff_MFs_attribute = nx.numeric_assortativity_coefficient(Graph_onemode_MF, "ind")
+
+    Graph_onemode_GC = bipartite.projected_graph(B, Node_GCs)
+    #Assr_coeff_GCs = nx.degree_assortativity_coefficient(Graph_onemode_GC)
+    #Assr_coeff_GCs_attribute = nx.attribute_assortativity_coefficient(Graph_onemode_GC, "ind")
+    Assr_coeff_GCs_attribute = nx.numeric_assortativity_coefficient(Graph_onemode_GC, "ind")
+
+    #print('Assortative Coefficient MF:',Assr_coeff_MFs, 'GC:', Assr_coeff_GCs)
+    print('Assortative Coefficient Attribute MF:',Assr_coeff_MFs_attribute, 'GC:', Assr_coeff_GCs_attribute)
+
+    # GC-MF Bipartite graph
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    fig.suptitle(DATA_FOLDER)
+
+
+
+    """
+    BM = bipartite.biadjacency_matrix(B, Node_MFs, Node_GCs)
+    ax1.spy(BM, markersize=1)
+    ax1.set_title('Biadjacency')
+    
+    A_MF = nx.adjacency_matrix(Graph_onemode_MF)
+    ax2.spy(A_MF, markersize=1)
+    ax2.set_title('MF onemode')
+
+
+    A_GC = nx.adjacency_matrix(Graph_onemode_GC)
+    ax3.spy(A_GC, markersize=1)
+    ax3.set_title('GC onemode')
+    
+    plt.show()
+    """
+    while True: rate(30)
+
+    print('Drawing Networks......... ')
+    pos = nx.spring_layout(Graph_onemode_MF)
+    nx.draw_networkx_nodes(Graph_onemode_MF, pos, node_color="tab:red")
+    nx.draw_networkx_labels(Graph_onemode_MF, pos)
+    nx.draw_networkx_edges(Graph_onemode_MF, pos, Graph_onemode_MF.edges)
+    plt.show()
+
+
+    print('Drawing Networks......... (GC) ')
+    pos = nx.spring_layout(Graph_onemode_GC)
+    nx.draw_networkx_nodes(Graph_onemode_GC, pos, node_color="tab:blue")
+    nx.draw_networkx_labels(Graph_onemode_GC, pos)
+    nx.draw_networkx_edges(Graph_onemode_GC, pos, Graph_onemode_GC.edges)
+    plt.show()
+    #print(len(Node_MFs), len(Node_GCs))
+
+    print('Drawing Networks......... (Bipartite) ')
+    pos = nx.bipartite_layout(B, Node_MFs)
+    nx.draw_networkx_nodes(B, pos)
+    nx.draw_networkx_labels(B, pos)
+    nx.draw_networkx_edges(B, pos, B.edges)
+    nx.draw_networkx_nodes(B, pos, nodelist=Node_MFs, node_color="tab:red")
+    plt.show()
+    
+
+    #B.add_nodes_from([1, 2, 3, 4], bipartite=0, color='red')
+    #B.add_nodes_from(["a", "b", "c"], bipartite=1)
+    #bottom_nodes, top_nodes = bipartite.sets(B)
+    print('Analysis Finished')
+    while True: rate(30)
+    sys.exit()
+
 
     #Num_GCs=10
     #Num_MFs=30
@@ -54,9 +192,9 @@ def main(ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
     #Num_MFs=10
     #overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
     
-    ANALYSIS_SPATIAL_DISTRIBUTION=True
+    ANALYSE_SPATIAL_DISTRIBUTION=False
     
-    if ANALYSIS_SPATIAL_DISTRIBUTION:
+    if ANALYSE_SPATIAL_DISTRIBUTION:
         Map_size_3D= [area_length, area_width, height_PCL]
         Map_size_2D= [area_length, height_PCL]
         Cell_radii=[radius_MFR, radius_GC]        
@@ -183,7 +321,7 @@ def main(ANALYSIS_SPATIAL_DISTRIBUTION, ANALYSIS_CONNECTIVITY):
             plt.legend()
             plt.show()
             
-    if ANALYSIS_CONNECTIVITY:
+    if ANALYSE_CONNECTIVITY:
         print('------ANALYSIS_CONNECTIVITY...---------------------------------------')
         print('Statistics of the number of synaptic partners...')
         basic_connectivity_statistics(GC_Objects, Cell_type='GC')
@@ -282,17 +420,17 @@ if __name__ == '__main__':
     
     #boolen for argparse is tricky, So used 0,1 instead
 
-    parser.add_argument('--Spatial_analysis', type=int, dest='ANALYSIS_SPATIAL_DISTRIBUTION',
+    parser.add_argument('--Spatial_analysis', type=int, dest='ANALYSE_SPATIAL_DISTRIBUTION',
                         default=1,
                         help='Running Spatial_analysis of cell soma distribution')
-    parser.add_argument('--Connectivity_analysis', type=int, dest='ANALYSIS_CONNECTIVITY',
+    parser.add_argument('--Connectivity_analysis', type=int, dest='ANALYSE_CONNECTIVITY',
                         default=1,
                         help='Running Connectivity analysis of GC-MF synapses')    
 
     args = parser.parse_args()
     
     #main(args.Num_childs, args.draw_dist, args.draw_net)
-    main(args.ANALYSIS_SPATIAL_DISTRIBUTION, args.ANALYSIS_CONNECTIVITY)
+    main(args.ANALYSE_SPATIAL_DISTRIBUTION, args.ANALYSE_CONNECTIVITY)
 
     elapsed_time = time.time() - start_time
     print('-------Analysis ended---------------------------')

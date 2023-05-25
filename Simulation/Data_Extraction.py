@@ -32,6 +32,9 @@ def load_all(folder_name, PATH, Print=True):
             GC_Colormap = np.ndarray.tolist(data_load(c, Location))
         elif 'MF_Colormap' in c:
             MF_Colormap = np.ndarray.tolist(data_load(c, Location))
+        elif 'Graph' in c:
+            #Graph = np.ndarray.tolist(data_load(c, Location))
+            Graph = data_load(c, Location)
     
     if Print:
         print('Data Loaded from:', Location)
@@ -39,7 +42,8 @@ def load_all(folder_name, PATH, Print=True):
         type_and_shape('MF_Objects', MF_Objects)
         type_and_shape('GC_Colormap', GC_Colormap)
         type_and_shape('MF_Colormap', MF_Colormap)
-    return GC_Objects, MF_Objects, GC_Colormap, MF_Colormap
+        type_and_shape('Graph', Graph)
+    return GC_Objects, MF_Objects, GC_Colormap, MF_Colormap, Graph
 
 def type_and_shape(Name, data):
     print(str(Name), 'type:', type(data), 'data shape:', np.shape(data))

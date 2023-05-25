@@ -39,6 +39,7 @@ def Form_Synapse(GCs, MFs, MF_activities, Normalize_activity=False, Two_steps=Tr
             else: activity_values.append(mf.activity_level/MF_activities)
         #Contact_rate_by_distance = softmax(distance_values)
         Contact_weights = np.array(activity_values)/np.array(distance_values)
+        #Contact_weights = np.array(activity_values) #for test of activity dependence
         #Contact_weights = softmax(Contact_weights)
         #distance_values=np.array(distance_values)
         

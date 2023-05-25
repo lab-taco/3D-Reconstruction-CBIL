@@ -21,7 +21,7 @@ import time
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
 #collision_check_duration=6
-Superposing=100
+Superposing=50
 TWO_STEPS=True
 if TWO_STEPS: step='2step'
 else: step='1step'
