@@ -42,7 +42,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     
 
     print('-------Data %s Loading...----------------------------------------------------'%DATA_FOLDER)
-    GC_Objects, MF_Objects, GC_Colormap, MF_Colormap, Graph = load_all(DATA_FOLDER, DATA_PATH, Print=True)
+    GC_Objects, MF_Objects, GC_Colormap, MF_Colormap, MF_Edges = load_all(DATA_FOLDER, DATA_PATH, Print=False)
     Num_GCs=len(GC_Objects)
     Num_MFs=len(MF_Objects)
 
@@ -54,93 +54,54 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     #print(GC_Colormap[0], GC_Colormap[-1])
     #print(np.shape(GC_Colormap))
     #print(type(GC_Colormap))
-    
-    
-    B = nx.Graph()
 
-    Num_edges=0
-    for Edges in Graph:
-        #print('Edges', Edges)
-        Num_edges+=len(Edges)
-        ind_MF=Edges[0][0]
-        node_MF = "M%d"%ind_MF 
-        B.add_node(node_MF, bipartite=0, color=MF_Objects[ind_MF], ind=ind_MF)
 
-        for edge in Edges:
-            ind_GC=edge[1]
-            node_GC = "G%d"%ind_GC
-            #node_GC = ind_GC
+    #Two module graph
+    #coefficient check 
 
-            #B.add_node(node_MF, bipartite=0, color='red')
-            #B.add_node(node_GC, bipartite=1, color='blue')
-            B.add_node(node_GC, bipartite=1, color=GC_Objects[ind_GC], ind=ind_GC)
-            
-            #print('edge', edge, 'type:', type((Ind_MF, Ind_GC)))
-            #B.add_edges_from([(Ind_MF, Ind_GC)])
-            B.add_edge(node_MF, node_GC)
-        
-        #print(B.number_of_edges())
-        #print(B.edges())
-        #break
+    #Edge swapping
+    #coefficient check
+    """ #Assr Mixing for Data
+    B, Node_MFs, Node_GCs = GCL_Bipartite_Graph(GC_Objects, MF_Objects, MF_Edges)
     print('Graph constructed......... ->>>  B connected:', nx.is_connected(B))
-    #print(B.number_of_edges())
-    #print('Num_edges', Num_edges)
-
-
-
-    Node_MFs, Node_GCs = bipartite.sets(B)
     print('len nodes - MF:', len(Node_MFs), 'GC:', len(Node_GCs))
 
-    ##Nodes' Sorted Indices
-    #Sorted_MFs=[]
-    #for node_ind in [mf.ind for mf in Node_MFs]:
-    #    for mf in Node_MFs:
-    #        if mf['ind']==node_ind:
-    #            Sorted_MFs.append(mf)
-    #            break
-    #
-    #print(Sorted_MFs)
-    #sys.exit()
+    print('One-mode Projection and Assortative coefficient calculation........')
+    Assr_coeff_MFs = Degree_Assortative_Mixing(B, Node_MFs)
+    Assr_coeff_GCs = Degree_Assortative_Mixing(B, Node_GCs)
+    print('Assortative Coefficient Attribute MF:',Assr_coeff_MFs, 'GC:', Assr_coeff_GCs)
+    """
 
 
 
-    #print('node data type:', type(Node_MFs))
 
+
+
+    
+    #Module mixing part
+    print('-------Constructing Two Module Netwokr....----------------------------------------------------')
+    #TM_GCs, TM_MFs, TM_MF_Edges = Two_module_network(Num_MFs, Num_GCs, GC_Colormap, MF_Colormap)
+    #TM_GCs, TM_MFs, TM_MF_Edges = Two_module_network(10, 20, GC_Colormap, MF_Colormap)
+    TM_MFs, TM_GCs, TM_MF_Edges, Module_size_MF, Module_size_GC = Two_module_network(10, 20, GC_Colormap, MF_Colormap)
+    
+    TM_B, Node_MFs_TM, Node_GCs_TM = GCL_Bipartite_Graph(TM_GCs, TM_MFs, TM_MF_Edges)
+    TM_B=TM_B.to_undirected()
+    
+    #print(TM_B.edges)
+    
+    #TM_B, Node_MFs_TM, Node_GCs_TM = GCL_Bipartite_Graph(TM_GCs, TM_MFs, TM_MF_Edges, Plot=True)
+    #Plot_Bipartite_Graph(TM_B, Node_MFs_TM, Node_GCs_TM)
+    
+    print('Graph constructed......... ->>>  B connected:', nx.is_connected(TM_B))
+    print('len nodes - MF:', len(Node_MFs_TM), 'GC:', len(Node_GCs_TM))
 
     print('One-mode Projection and Assortative coefficient calculation........')
-    Graph_onemode_MF = bipartite.projected_graph(B, Node_MFs)
-    #Assr_coeff_MFs = nx.degree_assortativity_coefficient(Graph_onemode_MF)
-    #Assr_coeff_MFs_attribute = nx.attribute_assortativity_coefficient(Graph_onemode_MF, "ind")
-    Assr_coeff_MFs_attribute = nx.numeric_assortativity_coefficient(Graph_onemode_MF, "ind")
+    Assr_coeff_MFs_TM = Degree_Assortative_Mixing(TM_B, Node_MFs_TM)
+    Assr_coeff_GCs_TM = Degree_Assortative_Mixing(TM_B, Node_GCs_TM)
+    print('Assortative Coefficient Attribute_TM MF:',Assr_coeff_MFs_TM, 'GC:', Assr_coeff_GCs_TM)
 
-    Graph_onemode_GC = bipartite.projected_graph(B, Node_GCs)
-    #Assr_coeff_GCs = nx.degree_assortativity_coefficient(Graph_onemode_GC)
-    #Assr_coeff_GCs_attribute = nx.attribute_assortativity_coefficient(Graph_onemode_GC, "ind")
-    Assr_coeff_GCs_attribute = nx.numeric_assortativity_coefficient(Graph_onemode_GC, "ind")
+    Two_module_edge_swapping(TM_B, Module_size_GC)
 
-    #print('Assortative Coefficient MF:',Assr_coeff_MFs, 'GC:', Assr_coeff_GCs)
-    print('Assortative Coefficient Attribute MF:',Assr_coeff_MFs_attribute, 'GC:', Assr_coeff_GCs_attribute)
-
-    """
-    # GC-MF Bipartite graph
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
-    fig.suptitle(DATA_FOLDER)
-
-    BM = bipartite.biadjacency_matrix(B, Node_MFs, Node_GCs)
-    ax1.spy(BM, markersize=1)
-    ax1.set_title('Biadjacency')
-    
-    A_MF = nx.adjacency_matrix(Graph_onemode_MF)
-    ax2.spy(A_MF, markersize=1)
-    ax2.set_title('MF onemode')
-
-
-    A_GC = nx.adjacency_matrix(Graph_onemode_GC)
-    ax3.spy(A_GC, markersize=1)
-    ax3.set_title('GC onemode')
-    
-    plt.show()
-    """
     while True: rate(30)
 
     print('Drawing Networks......... ')

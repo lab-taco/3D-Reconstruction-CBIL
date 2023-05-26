@@ -30,6 +30,7 @@ def extract_edges2(Cells): # generalized edges element structure: [Ind Cell, Ind
             edges_cell.append([ind_cell, ind_syn_partner])
         edges_for_all_Cells.append(edges_cell)
     
+    edges_for_all_Cells= np.asarray(edges_for_all_Cells, dtype='object')
     return edges_for_all_Cells
 
 def print_dist_stats(distribution):

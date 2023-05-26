@@ -9,8 +9,8 @@ def synaptic_partner_exchange(MF1, MF2, GC1, GC2, Size, D):
     #D= the number of exchange round; the degree of exchange
     for _ in range(D):
         GCs=np.array(GCs,dtype=object)
-        Early= np.array([gc for gc in GCs if gc.color==GC_colormap[0]])
-        Late = np.array([gc for gc in GCs if gc.color==GC_colormap[-1]])
+        #Early= np.array([gc for gc in GCs if gc.color==GC_colormap[0]])
+        #Late = np.array([gc for gc in GCs if gc.color==GC_colormap[-1]])
         Ind_choice_from_Early = np.random.choice(np.arange(len(Early)), size=Size, replace=False)
         Ind_choice_from_Late = np.random.choice (np.arange(len(Late)), size=Size, replace=False)
         #print('Ind_choice_from_Early', Ind_choice_from_Early)

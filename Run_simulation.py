@@ -230,8 +230,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     #Save_name_Synapses='No save'
     #Save_name_Synapses='tolerance'
     Save_name_Synapses='Graph_2023May'
-    edges_for_all_MFs=[]
     if not Save_name_Synapses=='No save':
+        
+        """
+        edges_for_all_MFs=[]
         for index, mf in enumerate(MFs):
             synapses=mf.synapse_partners
             edges=[] #element structure: [index_mf, index_parter_gcs]
@@ -240,10 +242,12 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
                 #edges.append([index, syn_partner, [GCs[syn_partner].color] ])
             #edges.append(mf.color)
             edges_for_all_MFs.append(edges)
-    
+        """
+        from Analysis.Analysis_Connectivity import extract_edges2
+        edges_for_all_MFs= extract_edges2(MFs)
+        
         #edges_for_all_MFs.append(['Num_GCs', Max_GC])
         #edges_for_all_MFs= edges_for_all_MFs.astype('object')
-        edges_for_all_MFs= np.asarray(edges_for_all_MFs, dtype='object')
         #data_save('Volume_filling2', edges_for_all_MFs)
 
         from datetime import date, datetime    
