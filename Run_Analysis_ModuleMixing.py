@@ -16,6 +16,7 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+import time
 from vpython import *
 
 
@@ -82,25 +83,52 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     print('-------Constructing Two Module Netwokr....----------------------------------------------------')
     #TM_GCs, TM_MFs, TM_MF_Edges = Two_module_network(Num_MFs, Num_GCs, GC_Colormap, MF_Colormap)
     #TM_GCs, TM_MFs, TM_MF_Edges = Two_module_network(10, 20, GC_Colormap, MF_Colormap)
-    TM_MFs, TM_GCs, TM_MF_Edges, Module_size_MF, Module_size_GC = Two_module_network(10, 20, GC_Colormap, MF_Colormap)
-    
+    TM_MFs, TM_GCs, TM_MF_Edges, Module_size_MF, Module_size_GC = Two_module_network(1000, 3000, GC_Colormap, MF_Colormap)
+    Module_separation=True
     TM_B, Node_MFs_TM, Node_GCs_TM = GCL_Bipartite_Graph(TM_GCs, TM_MFs, TM_MF_Edges)
     TM_B=TM_B.to_undirected()
     
     #print(TM_B.edges)
-    
+    Drawing_Network =False
     #TM_B, Node_MFs_TM, Node_GCs_TM = GCL_Bipartite_Graph(TM_GCs, TM_MFs, TM_MF_Edges, Plot=True)
-    #Plot_Bipartite_Graph(TM_B, Node_MFs_TM, Node_GCs_TM)
+    if Drawing_Network: Plot_Bipartite_Graph(TM_B, Node_MFs_TM, Node_GCs_TM, Module_separation)
     
     print('Graph constructed......... ->>>  B connected:', nx.is_connected(TM_B))
-    print('len nodes - MF:', len(Node_MFs_TM), 'GC:', len(Node_GCs_TM))
+    print('len nodes - MF:', len(Node_MFs_TM), 'GC:', len(Node_GCs_TM), 'GC Module Size', Module_size_GC)
 
     print('One-mode Projection and Assortative coefficient calculation........')
     Assr_coeff_MFs_TM = Degree_Assortative_Mixing(TM_B, Node_MFs_TM)
     Assr_coeff_GCs_TM = Degree_Assortative_Mixing(TM_B, Node_GCs_TM)
-    print('Assortative Coefficient Attribute_TM MF:',Assr_coeff_MFs_TM, 'GC:', Assr_coeff_GCs_TM)
+    print('Assortative Coefficient Attribute_TM MF (Initial):',Assr_coeff_MFs_TM, 'GC:', Assr_coeff_GCs_TM)
 
-    Two_module_edge_swapping(TM_B, Module_size_GC)
+    Num_swap=1000
+    t=np.arange(Num_swap)
+    List_Assr_coeff_MF = [Assr_coeff_MFs_TM]
+    List_Assr_coeff_GC = [Assr_coeff_GCs_TM]
+    print('Edge swapping........')
+    start = time.process_time()
+    for _ in range(Num_swap-1):
+        TM_B = Two_module_edge_swapping(TM_B, Module_size_GC)
+        #TM_B = Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=True)
+        List_Assr_coeff_MF.append(Degree_Assortative_Mixing(TM_B, Node_MFs_TM))
+        List_Assr_coeff_GC.append(Degree_Assortative_Mixing(TM_B, Node_GCs_TM))
+        #input("Press Enter to continue...")
+        #print("Len edges:", len(TM_B.edges))
+        #print('%d edge Swapped, Time taken:'%t, time.process_time() - start)
+
+    print('Swapping ended, Time taken:', time.process_time() - start)
+    print('Len collected coefficients MFs:', len(List_Assr_coeff_MF), 'GC:', len(List_Assr_coeff_GC))
+    print('Assortative Coefficient Attribute_TM MF (After Swap):',List_Assr_coeff_MF[-1], 'GC:', List_Assr_coeff_GC[-1])
+    #print(List_Assr_coeff_MF)
+    plt.plot(t, List_Assr_coeff_MF, 'r', label='MF')
+    plt.plot(t, List_Assr_coeff_GC, 'b', label='GC')
+    plt.xlabel("Num Swap")
+    plt.ylabel("Coefficient")
+    plt.title("Coefficient over edge swapping")
+    plt.legend()
+    plt.show()
+    
+    if Drawing_Network: Plot_Bipartite_Graph(TM_B, Node_MFs_TM, Node_GCs_TM, Module_separation)
 
     while True: rate(30)
 

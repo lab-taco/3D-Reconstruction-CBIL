@@ -4,7 +4,7 @@ import sys
 
 
 
-def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, Plot=False): #Color not needed?
+def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, Plot=False, Module_separation=False): #Color not needed?
     B = nx.DiGraph() #For the order of nodes, create Digraph first, then change to unordered graph
 
     Num_edges=0
@@ -36,7 +36,7 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, Plot=False): #Color
     #Top_Nodes, Btm_Nodes = bipartite.sets(B)    #Does not work when the network not connected
 
     if Plot:
-        Plot_Bipartite_Graph(B, Top_Nodes, Btm_Nodes)
+        Plot_Bipartite_Graph(B, Top_Nodes, Btm_Nodes, Module_separation)
     return B, Top_Nodes, Btm_Nodes
 
 def Degree_Assortative_Mixing(Graph, Projection_Nodes, numeric_attribute="ind"):
@@ -64,58 +64,105 @@ def Two_module_network(Num_MFs, Num_GCs, GC_Colormap, MF_Colormap):
     return MFs, GCs, MF_Edges, Module_size_MF, Module_size_GC
     
 
-def Two_module_edge_swapping(TM_B, Module_size_GC):
+def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
+    if Print_Analysis: Copygraph=TM_B.copy()
+
     # MF's bipartite=0 (left nodes)
-    Copygraph=TM_B.copy()
+
+    #Swap
+    """
+    1. To pick edge until the swap candidates are unique
+    while True:    
+        select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
+        Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
+        if not Swapped_edge1_duplicate and Swapped_edge2_duplicate:
+            break
+    TM_B.remove_edges_from([select_edge1, select_edge2])
+    TM_B.add_edges_from([Swapped_edge1, Swapped_edge2])
+    """
+
+    """
+    2. To skip swapping if the swap candidate is duplicated
+    """
+    select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
+    Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
+    if not Swapped_edge1_duplicate:
+        TM_B.remove_edges_from([select_edge1])
+        TM_B.add_edges_from([Swapped_edge1])
+    if not Swapped_edge2_duplicate:
+        TM_B.remove_edges_from([select_edge2])
+        TM_B.add_edges_from([Swapped_edge2])
+
+    #if [Swapped_edge1, Swapped_edge2] not in TM_B.edges:
+    #    print("target edges1 After swap:", [edge for edge in TM_B.edges if select_gc1 in edge])
+    #    print("target edges2 After swap:", [edge for edge in TM_B.edges if select_gc2 in edge])
+    #    raise Exception ('Swapped edges not added')
+    #Check if two graph equal
+    if Print_Analysis:
+        print("is_isomorphic:", nx.is_isomorphic(Copygraph, TM_B))
+        #print("target edges1 After swap:", [edge for edge in TM_B.edges if select_gc1 in edge])
+        #print("target edges2 After swap:", [edge for edge in TM_B.edges if select_gc2 in edge])
+    return TM_B
+
+def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis):
+    # MF's bipartite=0 (left nodes)
     #Select a GC node in each module randomly
     ind_select_gc1, ind_select_gc2 = np.random.choice(Module_size_GC, 2)
     ind_select_gc2+=Module_size_GC
     select_gc1, select_gc2 = 'G%d'%ind_select_gc1, 'G%d'%ind_select_gc2
-    print('Selected GCs:', select_gc1, select_gc2)
-    
+
+    GC1_exist, GC2_exist = select_gc1 in TM_B.nodes, select_gc2 in TM_B.nodes
+    if not (GC1_exist and GC2_exist):
+        raise Exception ('GC1_exist:', GC1_exist, "GC2_exist:", GC2_exist, "Selected GCs do not exist, During Two_module_edge_swapping")
 
     #print(TM_B.edges)
 
-    #Select an edge in each GC
+    #Select an edge in each GC module
     target_edges1 = [edge for edge in TM_B.edges if select_gc1 in edge]
     target_edges2 = [edge for edge in TM_B.edges if select_gc2 in edge]
-    print('Target edges1:', target_edges1, len(target_edges1))
-    print('Target edges2:', target_edges2, len(target_edges2))
-
+        
+    if not (len(target_edges1) and len(target_edges2)):
+        raise Exception ('Len GC1 edges:', len(target_edges1), "Len GC2 edges:", len(target_edges2), "GC edges are not same, maybe check if not 4")
+    
     ind_select_edge1 = np.random.choice(len(target_edges1))
     ind_select_edge2 = np.random.choice(len(target_edges2))
     select_edge1, select_edge2 = target_edges1[ind_select_edge1], target_edges2[ind_select_edge2]
-    print('Selected edges:', select_edge1, select_edge2)
 
-    #target_mf1 = select_edge1[0]
-    #target_mf2 = select_edge2[0]
-    target_mf1 = [node for node in select_edge1 if node!=select_gc1][0]
-    target_mf2 = [node for node in select_edge2 if node!=select_gc2][0]
+    target_mf1 = select_edge1[0] if select_edge1[0]!=select_gc1 else select_edge1[1]
+    target_mf2 = select_edge2[0] if select_edge2[0]!=select_gc2 else select_edge2[1]
+
+    MF1_exist, MF2_exist = target_mf1 in TM_B.nodes, target_mf2 in TM_B.nodes
+    if not (MF1_exist and MF2_exist):
+        raise Exception ('MF1_exist:', MF1_exist, "MF2_exist:", MF2_exist, "Selected MFs do not exist, During Two_module_edge_swapping")
     
-
-
-    #Swap
     Swapped_edge1=(target_mf2, select_gc1)
     Swapped_edge2=(target_mf1, select_gc2)
-    print('Swapped edges:', select_edge1, select_edge2)
-    TM_B.remove_edges_from([select_edge1, select_edge2])
-    TM_B.add_edges_from([Swapped_edge1, Swapped_edge2])
-    #Check if two graph equal
-    print(nx.is_isomorphic(Copygraph, TM_B))
-    return TM_B
 
-
-
+    if Print_Analysis:
+        print('Selected GCs:', select_gc1, select_gc2)
+        print('Target edges1:', target_edges1, len(target_edges1))
+        print('Target edges2:', target_edges2, len(target_edges2))
+        print('Selected edges:', select_edge1, select_edge2)
+        print('Swapped edges:', Swapped_edge1, Swapped_edge2)
+    
+    return select_edge1, select_edge2, Swapped_edge1, Swapped_edge2
+    
 
 
 import matplotlib.pyplot as plt
-def Plot_Bipartite_Graph(Graphtoplot, TopNodes, BtmNodes):
+def Plot_Bipartite_Graph(Graphtoplot, TopNodes, BtmNodes, Module_separation=False):
     print('Drawing Networks......... (Bipartite) ')
 
-    print(TopNodes, BtmNodes)
+    #print(TopNodes, BtmNodes)
     
     pos = dict()
-    pos.update( (n, (1, Graphtoplot.nodes[n]["ind"])) for n in TopNodes ) # put nodes from TopNodes at x=1
+    if not Module_separation: 
+        pos.update( (n, (1, Graphtoplot.nodes[n]["ind"])) for n in TopNodes ) # put nodes from TopNodes at x=1
+    else: 
+        Separate_space=5
+        pos.update( (n, (1, Graphtoplot.nodes[n]["ind"])) for n in TopNodes if Graphtoplot.nodes[n]["ind"] < len(TopNodes)/2)
+        pos.update( (n, (1, Graphtoplot.nodes[n]["ind"] + Separate_space)) for n in TopNodes if Graphtoplot.nodes[n]["ind"] >= len(TopNodes)/2)
+
     pos.update( (n, (2, Graphtoplot.nodes[n]["ind"])) for n in BtmNodes ) # put nodes from BottomNodes at x=2
 
     #pos = nx.bipartite_layout(Graph, TopNodes)
