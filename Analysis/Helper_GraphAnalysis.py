@@ -4,12 +4,14 @@ import sys
 
 
 
-def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, Plot=False, Module_separation=False): #Color not needed?
-    B = nx.DiGraph() #For the order of nodes, create Digraph first, then change to unordered graph
+def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot=False, Module_separation=False): #Color not needed?
+    if DiGraph: B = nx.DiGraph() #For the order of nodes, create Digraph first, then change to unordered graph, this is for node sequencing (Ass Coef will be same)
+    else: B = nx.Graph() 
 
     Num_edges=0
-    for Edges_per_mf in Total_Edges:
+    for ind_mfbyedge, Edges_per_mf in enumerate(Total_Edges):
         #print('Edges', Edges)
+        #print(ind_mfbyedge,'-th edge:', len(Edges_per_mf))
         Num_edges+=len(Edges_per_mf)
         ind_MF=Edges_per_mf[0][0]
         node_MF = "M%d"%ind_MF 
@@ -28,15 +30,18 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, Plot=False, Module_
             #B.add_edges_from([(Ind_MF, Ind_GC)])
             B.add_edge(node_MF, node_GC)
         
-        #print(B.number_of_edges())
+    #print('Num Total edges:', B.number_of_edges())
         #print(B.edges())
-        #break
     Top_Nodes = {n for n, d in B.nodes(data=True) if d["bipartite"] == 0}
     Btm_Nodes = set(B) - Top_Nodes
     #Top_Nodes, Btm_Nodes = bipartite.sets(B)    #Does not work when the network not connected
+    #print('Check nodes:', len(Top_Nodes), len(Btm_Nodes))
 
-    if Plot:
-        Plot_Bipartite_Graph(B, Top_Nodes, Btm_Nodes, Module_separation)
+    if Plot: Plot_Bipartite_Graph(B, Top_Nodes, Btm_Nodes, Module_separation)
+
+    if DiGraph: 
+        print('Network Constructed, changing to undirected.....')
+        B=B.to_undirected()
     return B, Top_Nodes, Btm_Nodes
 
 def Degree_Assortative_Mixing(Graph, Projection_Nodes, numeric_attribute="ind"):
