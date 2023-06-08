@@ -14,8 +14,10 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
         #print(ind_mfbyedge,'-th edge:', len(Edges_per_mf))
         Num_edges+=len(Edges_per_mf)
         ind_MF=Edges_per_mf[0][0]
-        node_MF = "M%d"%ind_MF 
-        B.add_node(node_MF, bipartite=0, color=MF_Objects[ind_MF], ind=ind_MF)
+        node_MF = "M%d"%ind_MF
+        mf_color = (MF_Objects[ind_MF].color.x, MF_Objects[ind_MF].color.y, MF_Objects[ind_MF].color.z)
+        #B.add_node(node_MF, bipartite=0, color=list(MF_Objects[ind_MF].color), ind=ind_MF)
+        B.add_node(node_MF, bipartite=0, color=mf_color, ind=ind_MF)
 
         for edge in Edges_per_mf:
             ind_GC=edge[1]
@@ -24,7 +26,9 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
 
             #B.add_node(node_MF, bipartite=0, color='red')
             #B.add_node(node_GC, bipartite=1, color='blue')
-            B.add_node(node_GC, bipartite=1, color=GC_Objects[ind_GC], ind=ind_GC)
+            #B.add_node(node_GC, bipartite=1, color=tuple(GC_Objects[ind_GC].color), ind=ind_GC)
+            gc_color = (GC_Objects[ind_GC].color.x, GC_Objects[ind_GC].color.y, GC_Objects[ind_GC].color.z)
+            B.add_node(node_GC, bipartite=1, color=gc_color, ind=ind_GC)
             
             #print('edge', edge, 'type:', type((Ind_MF, Ind_GC)))
             #B.add_edges_from([(Ind_MF, Ind_GC)])
@@ -44,12 +48,15 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
         B=B.to_undirected()
     return B, Top_Nodes, Btm_Nodes
 
-def Degree_Assortative_Mixing(Graph, Projection_Nodes, numeric_attribute="ind"):
+def Degree_Assortative_Mixing(Graph, Projection_Nodes, Mode_numeric=True, numeric_attribute="ind", static_attribute="color"):
     #One-mode projection
     Graph_onemode_projected= bipartite.projected_graph(Graph, Projection_Nodes)
     #Assortative coefficient
-    Assr_coeff_MFs_attribute = nx.numeric_assortativity_coefficient(Graph_onemode_projected, numeric_attribute)
-    return Assr_coeff_MFs_attribute
+    #print('average_degree_connectivity:', nx.average_degree_connectivity(Graph_onemode_projected))
+    if Mode_numeric: 
+        return nx.numeric_assortativity_coefficient(Graph_onemode_projected, numeric_attribute)
+    else: 
+        return nx.attribute_assortativity_coefficient(Graph_onemode_projected, static_attribute)
 
 
 

@@ -23,8 +23,8 @@ from vpython import *
 #DATA_FOLDER='16-05-2023-1711' #simple model
 #DATA_FOLDER ='16-05-2023-1723' # large population
 
-DATA_FOLDER='SP100-Small'
-#DATA_FOLDER='SP50'
+#DATA_FOLDER='SP100-Small'
+DATA_FOLDER='SP100'
 #DATA_FOLDER='SP0_activityonly'
 
 PLOT_Connectivity_CDF=True
@@ -54,7 +54,21 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     #print(GC_Colormap[0], GC_Colormap[-1])
     #print(np.shape(GC_Colormap))
     #print(type(GC_Colormap))
-    print('Data loaded, len MF:', Num_MFs, 'len GC:', Num_GCs, 'Shape Edges:', np.shape(MF_Edges))
+    print('Data loaded, len MF:', Num_MFs, 'len GC:', Num_GCs, 'Shape Edges:', np.shape(MF_Edges), 'MF_Colormap:', len(MF_Colormap), 'len GC_Colormap:', len(GC_Colormap))
+
+
+    #print(MF_Objects[0].color, type(MF_Objects[0].color))
+    #print(tuple(MF_Objects[0].color))
+    #print(hat(MF_Objects[0].color), type(hat(MF_Objects[0].color)))
+    
+    #print(MF_Objects[0].color[0], type(MF_Objects[0].color[0]))
+    #print(tuple(MF_Objects[0].color))
+    #print(MF_Objects[0].color.as_tuple())
+    #print(type(MF_Objects[0].color.astuple()))
+
+    #while True: rate(30)
+
+
 
     #Two module graph
     #coefficient check 
@@ -67,9 +81,12 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     print('Graph constructed......... ->>>  B connected:', nx.is_connected(B))
 
     print('One-mode Projection and Assortative coefficient calculation........')
-    Assr_coeff_MFs = Degree_Assortative_Mixing(B, Node_MFs)
-    Assr_coeff_GCs = Degree_Assortative_Mixing(B, Node_GCs)
+    Assr_coeff_MFs = Degree_Assortative_Mixing(B, Node_MFs, Mode_numeric=False)
+    Assr_coeff_GCs = Degree_Assortative_Mixing(B, Node_GCs, Mode_numeric=False)
+    #Assr_coeff_MFs = Degree_Assortative_Mixing(B, Node_MFs)
+    #Assr_coeff_GCs = Degree_Assortative_Mixing(B, Node_GCs)
     print('Assortative Coefficient Attribute MF:',Assr_coeff_MFs, 'GC:', Assr_coeff_GCs)
+
     print('Data network analysis ended, Time taken:', time.process_time() - start)
     while True: rate(30)
 
