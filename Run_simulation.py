@@ -39,7 +39,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         , 'Superposing:',Superposing, 'TWO_STEPS:',TWO_STEPS)
     print('DATA_PATH:', DATA_PATH, '\n-------------------------------------------------------')
     #Save_name_Synapses, Save_name_cell_locations='save_tmp', 'save_tmp'
-    Simulation_on=True
+    Simulation_on=False
     #GC_implementation=False
     #vpython=Falses
     time_sleep=False
@@ -71,9 +71,9 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Turn on graph to be True if you want to see the # of GCs.
     """    
     depth_IGL_table=exponential_growth(graph=Analysis_on)    
-    #num_GCs=logistic_growth('GC', Max_GC,graph=Analysis_on)
-    num_GCs=linear_growth(Max_GC,graph=Analysis_on)
-    if Analysis_on: sys.exit()
+    num_GCs=logistic_growth('GC', Max_GC,graph=Analysis_on)
+    #num_GCs=linear_growth(Max_GC,graph=Analysis_on)
+    
     
     """
     MF Blinking test
@@ -100,8 +100,14 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     #End_Time=21*24*time_division
     #End_Time=20*24*time_division
     
-    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=False)
+    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=Analysis_on)
+    sys.exit()
+
+    for i in [0, 5, 10, 15, 30, 50, 75, 90, 100]:
+        MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=i,draw=Analysis_on)
+
     if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
+
     while(Simulation_on and not P20_passed): #main loop
         #gives time final GCs to finish migration and form syanpse
 

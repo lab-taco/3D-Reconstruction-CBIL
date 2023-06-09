@@ -226,7 +226,7 @@ def GC_migration_complete(cell, vpython):
 #def GC_migrates(cells, current_depth_IGL, time_steps, collision_check_duration):       
 def Cell_migratedown(Cells, current_depth_IGL, time_steps):
     for cell in [c for c in Cells if not c.flag_arrived_final_destination]:
-        cell.gauge=GC_Migration_Speed*(1/(cell.body.pos.y)) # think about the function curve and gc location
+        cell.gauge=GC_Migration_Speed*(1/(cell.body.pos.y)) # think about the function curve and gc location >> Currently, migration end does not depend on activity, but only dependant on the location of migrating GC
         #cell.gauge=1
         cell.movedown(current_depth_IGL)               
         #if len(Cells)>1 and gc.flag_arrived_final_destination: \

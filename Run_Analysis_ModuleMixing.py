@@ -54,7 +54,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     #print(GC_Colormap[0], GC_Colormap[-1])
     #print(np.shape(GC_Colormap))
     #print(type(GC_Colormap))
-    print('Data loaded, len MF:', Num_MFs, 'len GC:', Num_GCs, 'Shape Edges:', np.shape(MF_Edges), 'MF_Colormap:', len(MF_Colormap), 'len GC_Colormap:', len(GC_Colormap))
+    print('Data loaded: len MF:', Num_MFs, 'len GC:', Num_GCs, 'Shape Edges:', np.shape(MF_Edges), 'MF_Colormap:', len(MF_Colormap), 'len GC_Colormap:', len(GC_Colormap))
 
 
     #print(MF_Objects[0].color, type(MF_Objects[0].color))
@@ -76,7 +76,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     #Edge swapping
     #coefficient check
     #Assr Mixing for Data
-    start = time.process_time()
+    #start = time.process_time()
     B, Node_MFs, Node_GCs = GCL_Bipartite_Graph(GC_Objects, MF_Objects, MF_Edges)
     print('Graph constructed......... ->>>  B connected:', nx.is_connected(B))
 
@@ -87,7 +87,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     #Assr_coeff_GCs = Degree_Assortative_Mixing(B, Node_GCs)
     print('Assortative Coefficient Attribute MF:',Assr_coeff_MFs, 'GC:', Assr_coeff_GCs)
 
-    print('Data network analysis ended, Time taken:', time.process_time() - start)
+    #print('--- Data network analysis ended, Time taken:', time.process_time() - start)
     while True: rate(30)
 
     #Module mixing part
