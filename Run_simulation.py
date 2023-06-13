@@ -21,7 +21,7 @@ import time
 #start_monitoring(seconds_frozen=10, test_interval=100)
 
 #collision_check_duration=6
-Superposing=50
+Superposing=30
 TWO_STEPS=True
 if TWO_STEPS: step='2step'
 else: step='1step'
@@ -39,7 +39,7 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         , 'Superposing:',Superposing, 'TWO_STEPS:',TWO_STEPS)
     print('DATA_PATH:', DATA_PATH, '\n-------------------------------------------------------')
     #Save_name_Synapses, Save_name_cell_locations='save_tmp', 'save_tmp'
-    Simulation_on=False
+    Simulation_on=True
     #GC_implementation=False
     #vpython=Falses
     time_sleep=False
@@ -101,7 +101,6 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     #End_Time=20*24*time_division
     
     MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=Analysis_on)
-    sys.exit()
 
     for i in [0, 5, 10, 15, 30, 50, 75, 90, 100]:
         MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=i,draw=Analysis_on)
