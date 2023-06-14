@@ -49,14 +49,16 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     print('-------Constructing Two Module Netwokr....----------------------------------------------------')
     #TM_GCs, TM_MFs, TM_MF_Edges = Two_module_network(Num_MFs, Num_GCs, GC_Colormap, MF_Colormap)
     #TM_GCs, TM_MFs, TM_MF_Edges = Two_module_network(10, 20, GC_Colormap, MF_Colormap)
-    TM_MFs, TM_GCs, TM_MF_Edges, Module_size_MF, Module_size_GC = Two_module_network(100, 300, GC_Colormap, MF_Colormap)
-    Module_separation=True
+    TM_MFs, TM_GCs, TM_MF_Edges, Module_size_MF, Module_size_GC = Two_module_network(200, 600, GC_Colormap, MF_Colormap)
+    
     TM_B, Node_MFs_TM, Node_GCs_TM = GCL_Bipartite_Graph(TM_GCs, TM_MFs, TM_MF_Edges, DiGraph=True)
     
     #print(TM_B.edges)
-    Drawing_Network =False
+    Module_separation=True
+    Drawing_Network =False    
     #TM_B, Node_MFs_TM, Node_GCs_TM = GCL_Bipartite_Graph(TM_GCs, TM_MFs, TM_MF_Edges, Plot=True)
-    if Drawing_Network: Plot_Bipartite_Graph(TM_B, Node_MFs_TM, Node_GCs_TM, Module_separation)
+    if Drawing_Network:
+        Plot_Bipartite_Graph(TM_B, Node_MFs_TM, Node_GCs_TM, Module_separation)
     
     print('Graph constructed......... ->>>  B connected:', nx.is_connected(TM_B))
     print('len nodes - MF:', len(Node_MFs_TM), 'GC:', len(Node_GCs_TM), 'GC Module Size', Module_size_GC)
@@ -66,7 +68,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     Assr_coeff_GCs_TM = Degree_Assortative_Mixing(TM_B, Node_GCs_TM)
     print('Assortative Coefficient Attribute_TM MF (Initial):',Assr_coeff_MFs_TM, 'GC:', Assr_coeff_GCs_TM)
 
-    Num_swap=100
+    Num_swap=400
     t=np.arange(Num_swap)
     List_Assr_coeff_MF = [Assr_coeff_MFs_TM]
     List_Assr_coeff_GC = [Assr_coeff_GCs_TM]
@@ -74,6 +76,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     start = time.process_time()
     for n in range(Num_swap-1):
         TM_B = Two_module_edge_swapping(TM_B, Module_size_GC)
+
         #TM_B = Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=True)
         List_Assr_coeff_MF.append(Degree_Assortative_Mixing(TM_B, Node_MFs_TM))
         List_Assr_coeff_GC.append(Degree_Assortative_Mixing(TM_B, Node_GCs_TM))

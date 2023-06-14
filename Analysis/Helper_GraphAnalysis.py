@@ -32,10 +32,9 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
             
             #print('edge', edge, 'type:', type((Ind_MF, Ind_GC)))
             #B.add_edges_from([(Ind_MF, Ind_GC)])
-            B.add_edge(node_MF, node_GC)
+            B.add_edge(node_MF, node_GC, swapped=False)
         
-    #print('Num Total edges:', B.number_of_edges())
-        #print(B.edges())
+   
     Top_Nodes = {n for n, d in B.nodes(data=True) if d["bipartite"] == 0}
     Btm_Nodes = set(B) - Top_Nodes
     #Top_Nodes, Btm_Nodes = bipartite.sets(B)    #Does not work when the network not connected
@@ -82,8 +81,8 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
     # MF's bipartite=0 (left nodes)
 
     #Swap
+    """ 1. To pick edge until the swap candidates are unique"""
     """
-    1. To pick edge until the swap candidates are unique
     while True:    
         select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
         Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
@@ -93,9 +92,8 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
     TM_B.add_edges_from([Swapped_edge1, Swapped_edge2])
     """
 
-    """
-    2. To skip swapping if the swap candidate is duplicated
-    """
+    """ 2. To skip swapping if the swap candidate is duplicated """
+    
     select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
     Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
     if not Swapped_edge1_duplicate:
@@ -104,6 +102,18 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
     if not Swapped_edge2_duplicate:
         TM_B.remove_edges_from([select_edge2])
         TM_B.add_edges_from([Swapped_edge2])
+    
+
+    """ 3. Adding edge attirubtes of swapped record, and swap edges only if they are not swapped  """
+    """
+    select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 =Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC)
+    Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
+    if not Swapped_edge1_duplicate and not Swapped_edge2_duplicate:
+        TM_B.remove_edges_from([select_edge1])
+        TM_B.add_edges_from([Swapped_edge1], swapped=True)
+        TM_B.remove_edges_from([select_edge2])
+        TM_B.add_edges_from([Swapped_edge2], swapped=True)"""
+
 
     #if [Swapped_edge1, Swapped_edge2] not in TM_B.edges:
     #    print("target edges1 After swap:", [edge for edge in TM_B.edges if select_gc1 in edge])
@@ -116,7 +126,7 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
         #print("target edges2 After swap:", [edge for edge in TM_B.edges if select_gc2 in edge])
     return TM_B
 
-def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis):
+def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis): #Random pick-up of cells and swapping of edges between cells
     # MF's bipartite=0 (left nodes)
     #Select a GC node in each module randomly
     ind_select_gc1, ind_select_gc2 = np.random.choice(Module_size_GC, 2)
@@ -158,8 +168,44 @@ def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis):
         print('Swapped edges:', Swapped_edge1, Swapped_edge2)
     
     return select_edge1, select_edge2, Swapped_edge1, Swapped_edge2
-    
 
+import random
+def Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC): #Random pick-up of edges
+    Module1_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
+                   if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])<Module_size_GC))
+                   and Attr['swapped']==False]
+    Module2_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
+                   if ((N1[0]=='G' and int(N1[1:])>=Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])>=Module_size_GC))
+                   and Attr['swapped']==False]
+    
+    """
+    Module1_Edges=[edg for edg in TM_B.edges 
+                   if ((edg[0][0]=='G' and int(edg[0][1:])<Module_size_GC) or  (edg[1][0]=='G'and int(edg[1][1:])<Module_size_GC))
+                   and TM_B.edges[edg]['swapped']==False]
+    
+    
+    Module2_Edges=[edg for edg in TM_B.edges 
+                   if ((edg[0][0]=='G' and int(edg[0][1:])>=Module_size_GC) or (edg[1][0]=='G'and int(edg[1][1:])>=Module_size_GC))
+                   and TM_B.edges[edg]['swapped']==False]"""
+
+    if len(Module1_Edges)!=len(Module2_Edges):
+        raise Exception("Modules are not divided evenly;", len(Module1_Edges),":",len(Module2_Edges))
+
+    #select_edge1, select_edge2 = np.random.choice(Module1_Edges), np.random.choice(Module2_Edges)
+    select_edge1, select_edge2 = random.choice(Module1_Edges), random.choice(Module2_Edges)
+    target_mf1 = select_edge1[0] if select_edge1[0][0]=='M' else select_edge1[1]
+    target_mf2 = select_edge2[0] if select_edge2[0][0]=='M' else select_edge2[1]
+    select_gc1 = select_edge1[0] if select_edge1!=target_mf1 else select_edge1[1]
+    select_gc2 = select_edge2[0] if select_edge2!=target_mf2 else select_edge2[1]
+
+    MF1_exist, MF2_exist = target_mf1 in TM_B.nodes, target_mf2 in TM_B.nodes
+    if not (MF1_exist and MF2_exist):
+        raise Exception ('MF1_exist:', MF1_exist, "MF2_exist:", MF2_exist, "Selected MFs do not exist, During Two_module_edge_swapping")
+
+    Swapped_edge1=(target_mf2, select_gc1)
+    Swapped_edge2=(target_mf1, select_gc2)
+
+    return select_edge1, select_edge2, Swapped_edge1, Swapped_edge2
 
 import matplotlib.pyplot as plt
 def Plot_Bipartite_Graph(Graphtoplot, TopNodes, BtmNodes, Module_separation=False):
