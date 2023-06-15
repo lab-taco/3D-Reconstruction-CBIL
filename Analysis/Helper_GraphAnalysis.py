@@ -94,25 +94,25 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
 
     """ 2. To skip swapping if the swap candidate is duplicated """
     
-    select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
+    """Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
     Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
     if not Swapped_edge1_duplicate:
         TM_B.remove_edges_from([select_edge1])
         TM_B.add_edges_from([Swapped_edge1])
     if not Swapped_edge2_duplicate:
         TM_B.remove_edges_from([select_edge2])
-        TM_B.add_edges_from([Swapped_edge2])
+        TM_B.add_edges_from([Swapped_edge2])"""
     
 
     """ 3. Adding edge attirubtes of swapped record, and swap edges only if they are not swapped  """
-    """
+    
     select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 =Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC)
     Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
     if not Swapped_edge1_duplicate and not Swapped_edge2_duplicate:
         TM_B.remove_edges_from([select_edge1])
         TM_B.add_edges_from([Swapped_edge1], swapped=True)
         TM_B.remove_edges_from([select_edge2])
-        TM_B.add_edges_from([Swapped_edge2], swapped=True)"""
+        TM_B.add_edges_from([Swapped_edge2], swapped=True)
 
 
     #if [Swapped_edge1, Swapped_edge2] not in TM_B.edges:
@@ -171,22 +171,25 @@ def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis): #Random 
 
 import random
 def Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC): #Random pick-up of edges
-    Module1_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
-                   if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])<Module_size_GC))
-                   and Attr['swapped']==False]
-    Module2_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
-                   if ((N1[0]=='G' and int(N1[1:])>=Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])>=Module_size_GC))
-                   and Attr['swapped']==False]
+    #Module1_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
+    #               if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])<Module_size_GC))
+    #               and Attr['swapped']==False]
+    #Module2_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
+    #               if ((N1[0]=='G' and int(N1[1:])>=Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])>=Module_size_GC))
+    #               and Attr['swapped']==False]
+    Module1_Edges=[]
+    Module2_Edges=[]
     
-    """
-    Module1_Edges=[edg for edg in TM_B.edges 
-                   if ((edg[0][0]=='G' and int(edg[0][1:])<Module_size_GC) or  (edg[1][0]=='G'and int(edg[1][1:])<Module_size_GC))
-                   and TM_B.edges[edg]['swapped']==False]
+    for N1, N2, Attr in TM_B.edges(data=True):
+        if Attr['swapped']==False:
+            if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or (N2[0]=='G'and int(N2[1:])<Module_size_GC)):
+                Module1_Edges.append((N1,N2))
+            else: Module2_Edges.append((N1,N2))
+
     
-    
-    Module2_Edges=[edg for edg in TM_B.edges 
-                   if ((edg[0][0]=='G' and int(edg[0][1:])>=Module_size_GC) or (edg[1][0]=='G'and int(edg[1][1:])>=Module_size_GC))
-                   and TM_B.edges[edg]['swapped']==False]"""
+   
+
+
 
     if len(Module1_Edges)!=len(Module2_Edges):
         raise Exception("Modules are not divided evenly;", len(Module1_Edges),":",len(Module2_Edges))
