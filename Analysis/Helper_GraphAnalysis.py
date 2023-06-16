@@ -40,6 +40,7 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
     #Top_Nodes, Btm_Nodes = bipartite.sets(B)    #Does not work when the network not connected
     #print('Check nodes:', len(Top_Nodes), len(Btm_Nodes))
 
+    
     if Plot: Plot_Bipartite_Graph(B, Top_Nodes, Btm_Nodes, Module_separation)
 
     if DiGraph: 
@@ -49,9 +50,13 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
 
 def Degree_Assortative_Mixing(Graph, Projection_Nodes, Mode_numeric=True, numeric_attribute="ind", static_attribute="color"):
     #One-mode projection
-    Graph_onemode_projected= bipartite.projected_graph(Graph, Projection_Nodes)
+    
+    #Graph_onemode_projected= bipartite.projected_graph(Graph, Projection_Nodes)
+    Graph_onemode_projected= nx.projected_graph(Graph, Projection_Nodes)
+    for node in Graph_onemode_projected.nodes():
+        Graph_onemode_projected.nodes[node].update(Graph.nodes[node])
     #Assortative coefficient
-    #print('average_degree_connectivity:', nx.average_degree_connectivity(Graph_onemode_projected))
+    #print('average_degree_connectivity:', nx.average_degree_connectivity(Graph_onemode_projected))   
     if Mode_numeric: 
         return nx.numeric_assortativity_coefficient(Graph_onemode_projected, numeric_attribute)
     else: 
@@ -86,33 +91,38 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
     while True:    
         select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
         Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
-        if not Swapped_edge1_duplicate and Swapped_edge2_duplicate:
+        if not (Swapped_edge1_duplicate and Swapped_edge2_duplicate):
             break
     TM_B.remove_edges_from([select_edge1, select_edge2])
-    TM_B.add_edges_from([Swapped_edge1, Swapped_edge2])
-    """
+    TM_B.add_edges_from([Swapped_edge1, Swapped_edge2])"""
+    
 
     """ 2. To skip swapping if the swap candidate is duplicated """
     
-    """Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
+    select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
     Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
     if not Swapped_edge1_duplicate:
         TM_B.remove_edges_from([select_edge1])
         TM_B.add_edges_from([Swapped_edge1])
     if not Swapped_edge2_duplicate:
         TM_B.remove_edges_from([select_edge2])
-        TM_B.add_edges_from([Swapped_edge2])"""
+        TM_B.add_edges_from([Swapped_edge2])
     
 
     """ 3. Adding edge attirubtes of swapped record, and swap edges only if they are not swapped  """
-    
+    """
     select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 =Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC)
     Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
+    #print('Swapped:', select_edge1, select_edge2, '>>>', Swapped_edge1, Swapped_edge2)
+    #print('Syn Partners:', TM_B.edges([select_edge1[0], select_edge1[1], select_edge2[0], select_edge2[1]]))
+    #print('Syn Partners:', TM_B.edges(select_edge1[0], select_edge2[0]))
+    #Gnodes = [(nd, atr) for nd, atr in TM_B.nodes("ind") if type(atr)!=int]
+    #print('No ind nodes(Before Swap):', Gnodes)
     if not Swapped_edge1_duplicate and not Swapped_edge2_duplicate:
-        TM_B.remove_edges_from([select_edge1])
-        TM_B.add_edges_from([Swapped_edge1], swapped=True)
-        TM_B.remove_edges_from([select_edge2])
-        TM_B.add_edges_from([Swapped_edge2], swapped=True)
+        TM_B.add_edges_from([Swapped_edge1, Swapped_edge2], swapped=True)
+        TM_B.remove_edges_from([select_edge1, select_edge2])
+        #TM_B.remove_edges_from([select_edge2])
+    """
 
 
     #if [Swapped_edge1, Swapped_edge2] not in TM_B.edges:
@@ -179,16 +189,14 @@ def Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC): #Random pick-up of ed
     #               and Attr['swapped']==False]
     Module1_Edges=[]
     Module2_Edges=[]
-    
-    for N1, N2, Attr in TM_B.edges(data=True):
-        if Attr['swapped']==False:
-            if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or (N2[0]=='G'and int(N2[1:])<Module_size_GC)):
-                Module1_Edges.append((N1,N2))
-            else: Module2_Edges.append((N1,N2))
-
-    
-   
-
+    Unswapped_edges= [(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) if Attr['swapped']==False]
+    if len(Unswapped_edges)<1:
+        raise Exception("No edges ledf during swapping")
+        
+    for N1, N2 in Unswapped_edges:
+        if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or (N2[0]=='G'and int(N2[1:])<Module_size_GC)):
+            Module1_Edges.append((N1,N2))
+        else: Module2_Edges.append((N1,N2))
 
 
     if len(Module1_Edges)!=len(Module2_Edges):
