@@ -1,9 +1,10 @@
 import numpy as np
 
 class Sample_cells_with_synapses: #Only have synaptic partner indices?
-    def __init__(self, cell_type, color_):
+    def __init__(self, cell_type, color_, IND_MODULE=0):
         self.synapse_partners=[] #as indices
         self.color=color_
+        self.ind_module=IND_MODULE
 
         if cell_type=='MF':
             self.cell_type='MF'
@@ -26,17 +27,17 @@ def coloring_by_indexing(color_list, cells):
     
 
 def randomly_conencted_sample_cells(Num_MFs, Num_GCs, colormap_mf, colormap_gc, \
-                                    add_MF=0, add_GC=0):    
+                                    add_MF=0, add_GC=0, IND_MODULE=0):
     Sample_MF_Objects=[]
     for _ in range(Num_MFs):
         #sample_mf=Sample_cells_with_synapses('MF', np.random.choice(colormap_mf))
-        sample_mf=Sample_cells_with_synapses('MF', colormap_mf[0])
+        sample_mf=Sample_cells_with_synapses('MF', colormap_mf[0], IND_MODULE)
         Sample_MF_Objects.append(sample_mf)
 
     Sample_GC_Objects=[]
     for ind_gc in range(Num_GCs):
         #sample_gc=Sample_cells_with_synapses('GC', np.random.choice(colormap_gc))
-        sample_gc=Sample_cells_with_synapses('GC', colormap_gc[0])
+        sample_gc=Sample_cells_with_synapses('GC', colormap_gc[0], IND_MODULE)
         synaptic_partners=np.random.choice(Num_MFs, size=4, replace=False)
         sample_gc.synapse_partners=sorted(synaptic_partners+add_MF)
         Sample_GC_Objects.append(sample_gc)

@@ -45,11 +45,12 @@ def load_all(folder_name, PATH, Print=True):
         type_and_shape('Graph', Graph)
     return GC_Objects, MF_Objects, GC_Colormap, MF_Colormap, Graph
 
-def load_coefficient(folder_name, PATH):
+def load_coefficient(folder_name, PATH, DATA_NAME):
     Location=PATH+'/data/'+folder_name    
     contents = os.listdir(Location)
     for c in contents:
-        data=np.ndarray.tolist(data_load(c, Location))
+        if c==DATA_NAME:
+            data=np.ndarray.tolist(data_load(c, Location))
 
     #print(np.shape(data), type(data))
     

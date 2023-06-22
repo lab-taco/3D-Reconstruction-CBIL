@@ -15,9 +15,10 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
         Num_edges+=len(Edges_per_mf)
         ind_MF=Edges_per_mf[0][0]
         node_MF = "M%d"%ind_MF
+        #node_MF = ind_MF
         mf_color = (MF_Objects[ind_MF].color.x, MF_Objects[ind_MF].color.y, MF_Objects[ind_MF].color.z)
         #B.add_node(node_MF, bipartite=0, color=list(MF_Objects[ind_MF].color), ind=ind_MF)
-        B.add_node(node_MF, bipartite=0, color=mf_color, ind=ind_MF)
+        B.add_node(node_MF, bipartite=0, color=mf_color, type="MF", ind=ind_MF, ind_module=MF_Objects[ind_MF].ind_module)
 
         for edge in Edges_per_mf:
             ind_GC=edge[1]
@@ -28,7 +29,7 @@ def GCL_Bipartite_Graph(GC_Objects, MF_Objects, Total_Edges, DiGraph=False, Plot
             #B.add_node(node_GC, bipartite=1, color='blue')
             #B.add_node(node_GC, bipartite=1, color=tuple(GC_Objects[ind_GC].color), ind=ind_GC)
             gc_color = (GC_Objects[ind_GC].color.x, GC_Objects[ind_GC].color.y, GC_Objects[ind_GC].color.z)
-            B.add_node(node_GC, bipartite=1, color=gc_color, ind=ind_GC)
+            B.add_node(node_GC, bipartite=1, color=gc_color, type="GC", ind=ind_GC, ind_module=GC_Objects[ind_GC].ind_module)
             
             #print('edge', edge, 'type:', type((Ind_MF, Ind_GC)))
             #B.add_edges_from([(Ind_MF, Ind_GC)])
@@ -69,9 +70,9 @@ from Analysis.Analysis_Connectivity import extract_edges2
 def Two_module_network(Num_MFs, Num_GCs, GC_Colormap, MF_Colormap):
 
     Module_size_MF, Module_size_GC = int(Num_MFs/2), int(Num_GCs/2) #Ind_MF2_start, Ind_GC2_start
-    MF1, GC1=randomly_conencted_sample_cells(int(Num_MFs/2), int(Num_GCs/2), MF_Colormap, [GC_Colormap[0]])
+    MF1, GC1=randomly_conencted_sample_cells(int(Num_MFs/2), int(Num_GCs/2), MF_Colormap, [GC_Colormap[0]], IND_MODULE=0)
     MF2, GC2=randomly_conencted_sample_cells(int(Num_MFs/2), int(Num_GCs/2), MF_Colormap, [GC_Colormap[-1]]\
-                                            , add_MF=Module_size_MF, add_GC= Module_size_GC)
+                                            , add_MF=Module_size_MF, add_GC= Module_size_GC, IND_MODULE=1)
 
     MFs = MF1+MF2
     GCs = GC1+GC2
@@ -98,7 +99,7 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
     
 
     """ 2. To skip swapping if the swap candidate is duplicated """
-    
+    """
     select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 = Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis)
     Swapped_edge1_duplicate, Swapped_edge2_duplicate = Swapped_edge1 in TM_B.edges, Swapped_edge2 in TM_B.edges
     if not Swapped_edge1_duplicate:
@@ -106,7 +107,7 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
         TM_B.add_edges_from([Swapped_edge1])
     if not Swapped_edge2_duplicate:
         TM_B.remove_edges_from([select_edge2])
-        TM_B.add_edges_from([Swapped_edge2])
+        TM_B.add_edges_from([Swapped_edge2])"""
     
 
     """ 3. Adding edge attirubtes of swapped record, and swap edges only if they are not swapped  """
@@ -121,8 +122,17 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
     if not Swapped_edge1_duplicate and not Swapped_edge2_duplicate:
         TM_B.add_edges_from([Swapped_edge1, Swapped_edge2], swapped=True)
         TM_B.remove_edges_from([select_edge1, select_edge2])
-        #TM_B.remove_edges_from([select_edge2])
-    """
+        #TM_B.remove_edges_from([select_edge2])"""
+    
+    """ 4. Adding Node attirubtes of original module indices, 
+            and swap edges only if they were connected to a MF in the original module"""
+    
+    while True:    
+        select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 =Direct_Edge_pickup_of_Unchanged_module_nodes(TM_B)        
+        if not (Swapped_edge1 in TM_B.edges and Swapped_edge2 in TM_B.edges): #Duplicate check
+            TM_B.add_edges_from([Swapped_edge1, Swapped_edge2], swapped=True)
+            TM_B.remove_edges_from([select_edge1, select_edge2])
+            break
 
 
     #if [Swapped_edge1, Swapped_edge2] not in TM_B.edges:
@@ -135,6 +145,37 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
         #print("target edges1 After swap:", [edge for edge in TM_B.edges if select_gc1 in edge])
         #print("target edges2 After swap:", [edge for edge in TM_B.edges if select_gc2 in edge])
     return TM_B
+
+
+
+def Direct_Edge_pickup_of_Unchanged_module_nodes(TM_B): # Attribute-based picking    
+    GC_Module1 = [n for n, d in TM_B.nodes(data=True) if d["type"] == "GC" and d["ind_module"] == 0]
+    GC_Module2 = [n for n, d in TM_B.nodes(data=True) if d["type"] == "GC" and d["ind_module"] == 1]
+    
+    #print(GC_Module1[0])
+    #print(TM_B.nodes[GC_Module1[0]])    
+    #print(type(TM_B.edges(GC_Module1)))
+    #print((list(TM_B.edges(GC_Module1))))
+
+    #MUE = Module_Unchanged_Edges    
+    MUE_Module1 = [(N1, N2) for N1, N2 in list(TM_B.edges(GC_Module1)) if TM_B.nodes[N1]['ind_module']==TM_B.nodes[N2]['ind_module']]
+    MUE_Module2 = [(N1, N2) for N1, N2 in list(TM_B.edges(GC_Module2)) if TM_B.nodes[N1]['ind_module']==TM_B.nodes[N2]['ind_module']]
+    
+    if len(MUE_Module1)<1 or len(MUE_Module2)<1:
+        raise Exception("No edges left during swapping")
+
+    #select_edge1, select_edge2 = np.random.choice(Module1_Edges), np.random.choice(Module2_Edges)
+    select_edge1, select_edge2 = random.choice(MUE_Module1), random.choice(MUE_Module2)
+    target_mf1 = select_edge1[0] if TM_B.nodes[select_edge1[0]]['type']=='MF' else select_edge1[1]
+    target_mf2 = select_edge2[0] if TM_B.nodes[select_edge2[0]]['type']=='MF' else select_edge2[1]
+    select_gc1 = select_edge1[0] if select_edge1!=target_mf1 else select_edge1[1]
+    select_gc2 = select_edge2[0] if select_edge2!=target_mf2 else select_edge2[1]
+
+    Swapped_edge1=(target_mf2, select_gc1)
+    Swapped_edge2=(target_mf1, select_gc2)
+
+    return select_edge1, select_edge2, Swapped_edge1, Swapped_edge2
+
 
 def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis): #Random pick-up of cells and swapping of edges between cells
     # MF's bipartite=0 (left nodes)
@@ -180,6 +221,8 @@ def Pick_edges_to_swap_Twomodule(TM_B, Module_size_GC, Print_Analysis): #Random 
     return select_edge1, select_edge2, Swapped_edge1, Swapped_edge2
 
 import random
+
+
 def Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC): #Random pick-up of edges
     #Module1_Edges=[(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) 
     #               if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or  (N2[1][0]=='G'and int(N2[1:])<Module_size_GC))
@@ -191,7 +234,7 @@ def Direct_Edge_pickup_of_Unswapped(TM_B, Module_size_GC): #Random pick-up of ed
     Module2_Edges=[]
     Unswapped_edges= [(N1, N2) for N1, N2, Attr in TM_B.edges(data=True) if Attr['swapped']==False]
     if len(Unswapped_edges)<1:
-        raise Exception("No edges ledf during swapping")
+        raise Exception("No edges left during swapping")
         
     for N1, N2 in Unswapped_edges:
         if ((N1[0]=='G' and int(N1[1:])<Module_size_GC) or (N2[0]=='G'and int(N2[1:])<Module_size_GC)):
