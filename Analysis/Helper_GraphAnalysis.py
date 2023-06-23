@@ -124,8 +124,13 @@ def Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=False):
         TM_B.remove_edges_from([select_edge1, select_edge2])
         #TM_B.remove_edges_from([select_edge2])"""
     
-    """ 4. Adding Node attirubtes of original module indices, 
-            and swap edges only if they were connected to a MF in the original module"""
+    """ 4. Combination of #1 & #3
+            [Added for better code] Node attirubtes of original module indices
+                        >> no need swap record attribute for edges
+            [Methods]
+            1. pick swap candidate edges only if they were connected to a MF in the original module (; same module ind btwn nodes GC & MF)
+            2. pickup until no duplicate
+            """
     
     while True:    
         select_edge1, select_edge2, Swapped_edge1, Swapped_edge2 =Direct_Edge_pickup_of_Unchanged_module_nodes(TM_B)        

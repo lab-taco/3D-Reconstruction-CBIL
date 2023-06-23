@@ -37,8 +37,8 @@ PLOT_BASELINE=False
 PLOT_CONVEX_HULL = False
 PLOT_SPATIAL_DIST=True
 
-NUM_MF=100
-NUM_GC=300
+NUM_MF=1000
+NUM_GC=3000
 def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
     
 
@@ -71,7 +71,7 @@ def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
     Assr_coeff_GCs_TM = Degree_Assortative_Mixing(TM_B, Node_GCs_TM)
     print('Assortative Coefficient Attribute_TM MF (Initial):',Assr_coeff_MFs_TM, 'GC:', Assr_coeff_GCs_TM)
 
-    Num_swap=600
+    Num_swap=6500
     t_range=np.arange(Num_swap)
     List_Assr_coeff_MF = [Assr_coeff_MFs_TM]
     List_Assr_coeff_GC = [Assr_coeff_GCs_TM]
@@ -82,22 +82,19 @@ def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
             #print('%d edge Swapped, Time taken:'%n_swap, time.process_time() - start)
             #Unswapped_edges= [(N1, N2) for N1, N2 in TM_B.edges if N1['ind_module']==N2['ind_module']]
             Unswapped_edges= [(N1, N2) for N1, N2 in TM_B.edges if TM_B.nodes[N1]['ind_module']==TM_B.nodes[N2]['ind_module']]
-            print('%d edge Swapped, Time taken:'%n_swap, 'NUM Unswapped:', len(Unswapped_edges))
+            print('%dth edge-pair Swapped'%n_swap, 'NUM-unswapped left:', len(Unswapped_edges))
             if len(Unswapped_edges)<1:
-                t_range=np.arange(n_swap+2)
+                t_range=np.arange(n_swap+1)
                 break
-            
+
         TM_B = Two_module_edge_swapping(TM_B, Module_size_GC)
         #print('node 1:', TM_B.nodes("ind"))
         #TM_B = Two_module_edge_swapping(TM_B, Module_size_GC, Print_Analysis=True)
         List_Assr_coeff_MF.append(Degree_Assortative_Mixing(TM_B, Node_MFs_TM))
         List_Assr_coeff_GC.append(Degree_Assortative_Mixing(TM_B, Node_GCs_TM))
         #input("Press Enter to continue...")
-        #print("Len edges:", len(TM_B.edges))
-        
-            
-
-
+        #print("Len edges:", len(TM_B.edges))       
+    
         """
         if n_swap%100==0:
             MF_coeff= List_Assr_coeff_MF[-1]
@@ -109,8 +106,9 @@ def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
                 print('len', len(List_Assr_coeff_MF), 'len t', len(t_range))
                 break"""
     #------------------SAVE-
+    #print(len(t_range), len(List_Assr_coeff_MF),  len(List_Assr_coeff_GC))
     coeef_data = [t_range, List_Assr_coeff_MF, List_Assr_coeff_GC]
-    data_name="Coefficient_overSwap"+"3"+"test"
+    data_name="Coefficient_overSwap"+"method4"+"large2"
     data_save(data_name, coeef_data, DATA_PATH, dir_name='Coefficient')
     print('Coeficient data', data_name, 'saved at', DATA_PATH)
     #-------------------
@@ -124,6 +122,7 @@ def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
     plt.xlabel("Num Swap")
     plt.ylabel("Coefficient")
     plt.title("Coefficient over edge swapping")
+    plt.axhline(y=0, color='k', linestyle='--', label='y=0')
     plt.legend()
     plt.show()
     
