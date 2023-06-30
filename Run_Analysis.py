@@ -23,9 +23,12 @@ from vpython import *
 #DATA_FOLDER ='16-05-2023-1723' # large population
 
 #DATA_FOLDER='SP100-Small'
-DATA_FOLDER='SP15'
-#DATA_FOLDER='SP100'
+#DATA_FOLDER='SP0'
+#DATA_FOLDER='Biased/SP0'
 #DATA_FOLDER='SP0_activityonly'
+#DATA_FOLDER='Unbiased_SP0_old'
+DATA_FOLDER='Unbaised2_SP75'
+
 
 PLOT_Connectivity_CDF=True
 RAND_NET=False
@@ -62,12 +65,15 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
         B = nx.Graph()
 
         Num_edges=0
-        for Edges in Graph:
+        for ind_MF, Edges in enumerate(Graph):
+            if len(Edges)==0:
+                print('MF', ind_MF, "has no edges")
+                continue
             #print('Edges', Edges)
             Num_edges+=len(Edges)
-            ind_MF=Edges[0][0]
+            #ind_MF=Edges[0][0]
             node_MF = "M%d"%ind_MF 
-            B.add_node(node_MF, bipartite=0, color=MF_Objects[ind_MF], ind=ind_MF)
+            B.add_node(node_MF, bipartite=0, color=MF_Objects[ind_MF].color, ind=ind_MF)
 
             for edge in Edges:
                 ind_GC=edge[1]
@@ -76,7 +82,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
 
                 #B.add_node(node_MF, bipartite=0, color='red')
                 #B.add_node(node_GC, bipartite=1, color='blue')
-                B.add_node(node_GC, bipartite=1, color=GC_Objects[ind_GC], ind=ind_GC)
+                B.add_node(node_GC, bipartite=1, color=GC_Objects[ind_GC].color, ind=ind_GC)
 
                 #print('edge', edge, 'type:', type((Ind_MF, Ind_GC)))
                 #B.add_edges_from([(Ind_MF, Ind_GC)])
@@ -144,6 +150,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
 
         plt.show()
         """
+        """
         while True: rate(30)
 
         print('Drawing Networks......... ')
@@ -174,11 +181,8 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
         #B.add_nodes_from([1, 2, 3, 4], bipartite=0, color='red')
         #B.add_nodes_from(["a", "b", "c"], bipartite=1)
         #bottom_nodes, top_nodes = bipartite.sets(B)
-        print('Analysis Finished')
-        while True: rate(30)
-        sys.exit()
-
-
+        """
+        
     #Num_GCs=10
     #Num_MFs=30
     #len_synapse(GCs, MFs) -------------------------------------------
@@ -187,7 +191,7 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
     print('Num GCs:', Num_GCs, 'Num MFs:', Num_MFs)
     #GC_synaptic_partner_exchange(MF_Objects, GC_Objects, GC_Colormap, Size=3, D=1)
     
-    D=1
+    
     #Num_MFs=10
     #overlapped_network(Num_MFs, Num_MFs*3, MF_Colormap, GC_Colormap, 50, D)
     

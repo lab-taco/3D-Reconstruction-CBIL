@@ -30,6 +30,9 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             GC_implementation, Layer_expansion, FLAG_vpython, time_sleep, \
                 Save_name_Synapses, Save_name_cell_locations, Save_name_Cell_Objects):
 
+    Layer_expansion=False
+    MF_MOVEMENT=False
+
     start_time = time.time()
     
     print('-------Parameter status-----------------------------\n'\
@@ -58,6 +61,10 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
         layer_division(area_length, height_PCL, area_width, labeling=False, vpython=FLAG_vpython) #against PCL, the ceiling
         if Layer_expansion: 
             IGL_expansion=moving_layer(area_length, height_PCL, area_width, vpython=FLAG_vpython) #against WM, the bottom
+            depth_IGL_table=exponential_growth(graph=Analysis_on)
+        else: 
+            IGL_expansion=moving_layer(area_length, 0, area_width, vpython=FLAG_vpython) #Set by maximum length
+            depth_IGL_table=np.zeros(simulation_time)  
         print('Simulation starts...')
         MFs, Color_map_MF=sample_MFs_clusters(Num_parents, Num_childs, max_MF, MF_Mig_Timing_Variation, \
                                 area_length,area_width, height_PCL, vpython=FLAG_vpython)
@@ -70,9 +77,9 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Growth controls of Granule cell & IGL depth.
     Turn on graph to be True if you want to see the # of GCs.
     """    
-    depth_IGL_table=exponential_growth(graph=Analysis_on)    
-    num_GCs=logistic_growth('GC', Max_GC,graph=Analysis_on)
-    #num_GCs=linear_growth(Max_GC,graph=Analysis_on)
+        
+    #num_GCs=logistic_growth('GC', Max_GC,graph=Analysis_on)
+    num_GCs=linear_growth(Max_GC,graph=Analysis_on)
     
     
     """
@@ -95,43 +102,72 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
     Num_variation_GC_color = GC_Mig_Timing_Variation
     Color_map_GC = colormap(Num_variation_GC_color, 'GC')
     current_num_GCs=0  #current num cell
-    Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed=False, False, False, False, False
+    Simul_Start, Postnatal_days, P7_passed, P14_passed, P20_passed, Waiting_last_cell=False, False, False, False, False, False
     FLAG_SYNAPSTIC_FORMATION=True 
     #End_Time=21*24*time_division
     #End_Time=20*24*time_division
     
-    MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=Analysis_on)
+    
+    if Analysis_on:
+        parameter_values = [0, 5, 10, 15, 30, 50, 75, 90, 100]
+        P7=24*7*time_division
+        P14=24*14*time_division
+        t=np.arange(24*20*time_division) 
 
-    for i in [0, 5, 10, 15, 30, 50, 75, 90, 100]:
-        MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=i,draw=Analysis_on)
+        fig, axes = plt.subplots(1, len(parameter_values), figsize=(4*len(parameter_values),4), sharex=True)
+
+        for i, parameter in enumerate(parameter_values):
+            MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation, time_division, SP=parameter, draw=False)
+            ax = axes[i]
+            
+            for curve in MF_activity_pattern:
+                ax.plot(t, curve)
+            ax.axvline(x=P7, color='k', linestyle='--',label='P7')
+            ax.axvline(x=P14, color='k', linestyle='--',label='P14')
+            ax.set_title("Superposing=%d"%parameter)
+        
+        ax.set_ylabel('activity')
+        ax.set_xlabel('time')
+        plt.tight_layout()
+        plt.show()
+
+    else: 
+        MF_activity_pattern=curvs_generations(MF_Mig_Timing_Variation,time_division, SP=Superposing,draw=Analysis_on)
 
     if len(Color_map_MF)!=len(MF_activity_pattern): raise Exception('coloring & mf activity curve mismatch')
 
-    while(Simulation_on and not P20_passed): #main loop
+    
+
+    while(Simulation_on and not (P20_passed and Waiting_last_cell)): #main loop
         #gives time final GCs to finish migration and form syanpse
 
         if time_sleep:
             sleep(0.00001)
             
         #MF grow up toward PCL till P7 at which 30% of MFs invade PCL & GCs start migrate down to IGL
-        if not P7_passed: 
-            MF_growup(MFs)
-        elif not P14_passed: 
-            MFs_repulsed(MFs) 
+        if MF_MOVEMENT:
+            if not P7_passed: 
+                MF_growup(MFs)
+            elif not P14_passed: 
+                MFs_repulsed(MFs) 
 
         if not Postnatal_days: # Embryonic stage
             if not Simul_Start: 
                 print("Embryonic stage")
                 Simul_Start=True
-            num_MFs_above_PCL=0
-            for mf in MFs:
-                if mf.body.pos.y>=height_PCL:
-                    num_MFs_above_PCL+=1
-            #Start of postnatal days P0 at which 16% of MFs invade PCL
-            if num_MFs_above_PCL>=int(0.16*MF_total):                 
+
+            if MF_MOVEMENT:
+                num_MFs_above_PCL=0
+                for mf in MFs:
+                    if mf.body.pos.y>=height_PCL:
+                        num_MFs_above_PCL+=1
+                #Start of postnatal days P0 at which 16% of MFs invade PCL
+                if num_MFs_above_PCL>=int(0.16*MF_total):                 
+                    Postnatal_days=True
+                    time_display.display.text=('P%d'%time_display.day)
+            else: 
                 Postnatal_days=True
                 time_display.display.text=('P%d'%time_display.day)
-        
         elif Postnatal_days: # Postnatal stage            
             #Postnatal Timing
             if not P7_passed and time_display.counter==7*24*time_division: P7_passed=True # 7days * 24 hours
@@ -145,11 +181,13 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             #IGL expansion
             #if time_display.counter<len(depth_IGL_table):
             
-            #current_depth=depth_IGL_table[time_display.counter-1]
-            current_depth=depth_IGL_table[time_display.counter]
+            #current_depth=depth_IGL_table[time_display.counter-1]            
             if Layer_expansion: #expand IGL according to current depth by table
-                IGL_expansion.expand(current_depth)
+                current_depth=depth_IGL_table[time_display.counter]
+                IGL_expansion.expand(current_depth)            
                 #if P20_passed: IGL_expansion.expansion_end()
+            else:
+                current_depth=0
             #Calculation of MF Molecular Activity
             #MF_activities=MF_activity_coordinator(time_display.counter, time_division)
                     
@@ -171,15 +209,22 @@ def main(Num_childs, Num_parents, Simulation_on, Blink, \
             Stop_or_not(GCs, target_cells, FLAG_vpython)
             if current_num_GCs>0:
                 if GCs[0].flag_arrived_final_destination:
-                    Sum_mf_activities=MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, time_display)
+                    if not P20_passed:
+                        Sum_mf_activities=MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, time_display.counter)
+                    else: Sum_mf_activities=MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, time_display.counter-1)
+
                     if Sum_mf_activities<0: 
                         print('Sum_mf_activities < 0 at time:', time_display.counter)                    
                     else:
                         Form_Synapse(GCs, MFs, Sum_mf_activities, Two_steps=TWO_STEPS)
                         #Initial_Contacts(GCs, MFs)
-
-            time_display.time_count() # count time steps for postnatal days
-            if time_display.counter==20*24*time_division: P20_passed=True # 20days * 24 hours 
+            
+            if not P20_passed:
+                time_display.time_count() # count time steps for postnatal days
+                if time_display.counter==20*24*time_division:
+                    P20_passed=True # 20days * 24 hours
+            elif P20_passed and not Waiting_last_cell:
+                if GCs[-1].flag_arrived_final_destination: Waiting_last_cell=True
     print('Simulation end')
     
     #while True:

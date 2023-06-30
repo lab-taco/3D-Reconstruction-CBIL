@@ -9,6 +9,7 @@ DATA_PATH = os.getcwd()
 DATA_NAME_1= "Coefficient_overSwap1Large.npy"
 DATA_NAME_2= "Coefficient_overSwap2Large.npy"
 DATA_NAME_3= "Coefficient_overSwapmethod4large.npy"
+DATA_NAME_3= "Coefficient_overSwapmethod4largeFullswap.npy"
 
 #t_range, List_Assr_coeff_MF1, List_Assr_coeff_GC1 = load_coefficient(DATA_FOLDER, DATA_PATH, DATA_NAME_1)
 #t_range, List_Assr_coeff_MF2, List_Assr_coeff_GC2 = load_coefficient(DATA_FOLDER, DATA_PATH, DATA_NAME_2)

@@ -18,11 +18,11 @@ def sum_normalization(valueset): #Luce's Choice Axiom
 def softmax(valueset): # Exponential
     return np.exp(valueset)/np.exp(valueset).sum()
     
-def MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, time_display):
+def MF_activities_summation(MFs, Color_map_MF, MF_activity_pattern, timing_counter):
     Sum_mf_activities=0 # For the calculation of synapse contact probabiligy, later
     for mf in MFs:
         mig_ind = Color_map_MF.index(mf.color)                
-        mf.activity_level=MF_activity_pattern[mig_ind][time_display.counter]
+        mf.activity_level=MF_activity_pattern[mig_ind][timing_counter]
     Sum_mf_activities+=mf.activity_level
     return Sum_mf_activities
 

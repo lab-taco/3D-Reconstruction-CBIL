@@ -71,7 +71,7 @@ def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
     Assr_coeff_GCs_TM = Degree_Assortative_Mixing(TM_B, Node_GCs_TM)
     print('Assortative Coefficient Attribute_TM MF (Initial):',Assr_coeff_MFs_TM, 'GC:', Assr_coeff_GCs_TM)
 
-    Num_swap=6500
+    Num_swap=8000
     t_range=np.arange(Num_swap)
     List_Assr_coeff_MF = [Assr_coeff_MFs_TM]
     List_Assr_coeff_GC = [Assr_coeff_GCs_TM]
@@ -108,7 +108,7 @@ def main(ANALYSE_SPATIAL_DISTRsIBUTION, ANALYSE_CONNECTIVITY):
     #------------------SAVE-
     #print(len(t_range), len(List_Assr_coeff_MF),  len(List_Assr_coeff_GC))
     coeef_data = [t_range, List_Assr_coeff_MF, List_Assr_coeff_GC]
-    data_name="Coefficient_overSwap"+"method4"+"large2"
+    data_name="Coefficient_overSwap"+"method4"+"largeFullswap"
     data_save(data_name, coeef_data, DATA_PATH, dir_name='Coefficient')
     print('Coeficient data', data_name, 'saved at', DATA_PATH)
     #-------------------

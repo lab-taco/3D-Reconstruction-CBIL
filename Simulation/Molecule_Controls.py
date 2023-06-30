@@ -57,7 +57,8 @@ def gaussian_curves_activity(x, duration, mu_init, t_shift, Superposition=0, tim
     curve_width= duration/6 # 6 sigma; width of bell curve = peak time duration of each curve
     #variance = 1, sigma=math.sqrt(variance)=1
     sigma =1*time_division*curve_width# do higher than 0
-    sigma2=1*time_division*curve_width*(1-Superposition/100)+1*curve_width*(Superposition/100)*duration # width term
+    #sigma2=1*time_division*curve_width*(1-Superposition/100)+1*curve_width*(Superposition/100)*duration # width term
+    sigma2=1*time_division*curve_width*(1-Superposition/200)+1*curve_width*(Superposition/200)*duration # width term
     if sigma2<=0: raise Exception("sigma2 value is to low")
 
     term1 = 1/(sigma*math.sqrt(2*math.pi))

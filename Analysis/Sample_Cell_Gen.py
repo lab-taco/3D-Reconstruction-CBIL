@@ -37,7 +37,8 @@ def randomly_conencted_sample_cells(Num_MFs, Num_GCs, colormap_mf, colormap_gc, 
     Sample_GC_Objects=[]
     for ind_gc in range(Num_GCs):
         #sample_gc=Sample_cells_with_synapses('GC', np.random.choice(colormap_gc))
-        sample_gc=Sample_cells_with_synapses('GC', colormap_gc[0], IND_MODULE)
+        #sample_gc=Sample_cells_with_synapses('GC', colormap_gc[0], IND_MODULE)
+        sample_gc=Sample_cells_with_synapses('GC', np.random.choice(colormap_gc), IND_MODULE)
         synaptic_partners=np.random.choice(Num_MFs, size=4, replace=False)
         sample_gc.synapse_partners=sorted(synaptic_partners+add_MF)
         Sample_GC_Objects.append(sample_gc)
