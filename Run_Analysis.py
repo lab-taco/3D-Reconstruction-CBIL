@@ -27,7 +27,7 @@ from vpython import *
 #DATA_FOLDER='Biased/SP0'
 #DATA_FOLDER='SP0_activityonly'
 #DATA_FOLDER='Unbiased_SP0_old'
-DATA_FOLDER='Unbaised2_SP75'
+DATA_FOLDER='Unbaised2_SP100'
 
 
 PLOT_Connectivity_CDF=True
@@ -399,16 +399,22 @@ def main(ANALYSE_SPATIAL_DISTRIBUTION, ANALYSE_CONNECTIVITY):
                 'np.shape(cumu_y)',np.shape(cumu_y), type(cumu_x))
             Concat=np.vstack((cumu_x, cumu_y)).T
             print('np.concat(cumu_x)',np.shape(Concat))
+            Concat_rand=np.vstack((sample_cumu_x, sample_cumu_y)).T
             #print(Concat)
             #sys.exit()
             #df = pd.DataFrame(Concat, columns = ['x','y'])
             #df.to_excel('Connectivity_Reconstructed.xlsx')
             
-            SAVE_Ratio_Dist=False
+            SAVE_Ratio_Dist=True
             if SAVE_Ratio_Dist:
-                Name_ratio_dist='sample name'
+                #Name_ratio_dist='sample name'
+                Name_ratio_dist='ratio'+DATA_FOLDER
                 Data_ratio_dist=Concat
                 data_save(Name_ratio_dist, Data_ratio_dist, DATA_PATH, DATA_FOLDER)
+
+                Name_rand_ratio_dist='ratio_Rand'+DATA_FOLDER
+                Data_rand_ratio_dist=Concat_rand
+                data_save(Name_rand_ratio_dist, Data_rand_ratio_dist, DATA_PATH, DATA_FOLDER)
         
 
 

@@ -1,6 +1,6 @@
 *.xlsx
 *.pyc
-*.npy
+#*.npy
 *.ipynb
 test*
 Screenshot*
